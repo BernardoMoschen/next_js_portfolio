@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Box,
-    Button,
-    Collapse,
-    useTheme,
-    useMediaQuery,
-    Typography,
-    Fade,
-} from '@mui/material';
-import { ExpandMore, ExpandLess, Star } from '@mui/icons-material';
+import { FaStar, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import type { Technology } from '../../data/aboutData';
 import TechnologyChip from './TechnologyChip';
 
@@ -17,145 +8,108 @@ interface TechnologyChipListProps {
 }
 
 const TechnologyChipList: React.FC<TechnologyChipListProps> = ({ technologies }) => {
-    const theme = useTheme();
     const [showAll, setShowAll] = useState(false);
 
     const featuredTechnologies = technologies.filter(tech => tech.featured);
     const additionalTechnologies = technologies.filter(tech => !tech.featured);
-    const hasAdditionalTechnologies = additionalTechnologies.length > 0;
+    const hasAdditional = additionalTechnologies.length > 0;
 
     return (
-        <Box>
-            {/* Featured Technologies Section */}
+        <div>
+            {/* Featured Technologies */}
             {featuredTechnologies.length > 0 && (
-                <Box sx={{ mb: hasAdditionalTechnologies ? 1.5 : 0 }}>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            mb: 0.8,
-                        }}
-                    >
-                        <Star
-                            sx={{
-                                color: 'primary.main',
-                                fontSize: 12,
-                                mr: 0.5,
-                            }}
-                        />
-                        <Typography
-                            variant="subtitle2"
-                            sx={{
+                <div style={{ marginBottom: hasAdditional ? '0.75rem' : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <FaStar size={10} style={{ color: 'var(--color-primary)', marginRight: '0.3rem' }} />
+                        <span
+                            style={{
                                 fontWeight: 700,
-                                color: 'text.primary',
+                                color: 'var(--color-text)',
                                 fontSize: '0.65rem',
                                 textTransform: 'uppercase',
-                                letterSpacing: 0.5,
+                                letterSpacing: '0.05em',
                             }}
                         >
                             Core Technologies
-                        </Typography>
-                    </Box>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: 0.8,
-                        }}
-                    >
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                         {featuredTechnologies.map((tech, index) => (
-                            <Fade in={true} timeout={200 + index * 50} key={index}>
-                                <Box>
-                                    <TechnologyChip technology={tech} />
-                                </Box>
-                            </Fade>
+                            <TechnologyChip key={index} technology={tech} />
                         ))}
-                    </Box>
-                </Box>
+                    </div>
+                </div>
             )}
 
-            {/* Additional Technologies - Collapsible */}
-            {hasAdditionalTechnologies && (
-                <Box>
-                    <Collapse in={showAll}>
-                        <Box sx={{ mb: 1 }}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    mb: 0.8,
-                                }}
-                            >
-                                <Typography
-                                    variant="subtitle2"
-                                    sx={{
+            {/* Additional Technologies - collapsible */}
+            {hasAdditional && (
+                <div>
+                    <div
+                        style={{
+                            overflow: 'hidden',
+                            maxHeight: showAll ? '500px' : '0px',
+                            opacity: showAll ? 1 : 0,
+                            transition: 'max-height 0.35s ease, opacity 0.3s ease',
+                        }}
+                    >
+                        <div style={{ marginBottom: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                <span
+                                    style={{
                                         fontWeight: 600,
-                                        color: 'text.secondary',
+                                        color: 'var(--color-text-secondary)',
                                         fontSize: '0.6rem',
                                         textTransform: 'uppercase',
-                                        letterSpacing: 0.5,
+                                        letterSpacing: '0.05em',
                                     }}
                                 >
                                     Additional Skills
-                                </Typography>
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.8,
-                                }}
-                            >
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                 {additionalTechnologies.map((tech, index) => (
-                                    <Fade in={showAll} timeout={150 + index * 30} key={index}>
-                                        <Box>
-                                            <TechnologyChip technology={tech} />
-                                        </Box>
-                                    </Fade>
+                                    <TechnologyChip key={index} technology={tech} />
                                 ))}
-                            </Box>
-                        </Box>
-                    </Collapse>
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* Compact Show More/Less Button */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.8 }}>
-                        <Button
-                            variant="outlined"
-                            size="small"
+                    {/* Toggle button */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.4rem' }}>
+                        <button
                             onClick={() => setShowAll(!showAll)}
-                            startIcon={showAll ? <ExpandLess /> : <ExpandMore />}
-                            sx={{
-                                borderColor: 'primary.main',
-                                color: 'primary.main',
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
+                                border: '1px solid var(--color-primary)',
+                                color: 'var(--color-primary)',
+                                background: 'transparent',
                                 fontSize: '0.65rem',
                                 fontWeight: 600,
-                                textTransform: 'none',
-                                borderRadius: 1.5,
-                                px: 1.5,
-                                py: 0.3,
-                                minWidth: 100,
+                                borderRadius: 6,
+                                padding: '0.2rem 0.75rem',
                                 height: 24,
-                                background: theme.palette.mode === 'dark'
-                                    ? `${theme.palette.primary.main}06`
-                                    : `${theme.palette.primary.main}04`,
-                                '&:hover': {
-                                    backgroundColor: `${theme.palette.primary.main}12`,
-                                    borderColor: 'primary.main',
-                                    transform: 'translateY(-1px)',
-                                    boxShadow: `0 2px 8px ${theme.palette.primary.main}20`,
-                                },
+                                cursor: 'pointer',
                                 transition: 'all 0.2s ease-in-out',
+                                fontFamily: 'inherit',
+                            }}
+                            onMouseEnter={e => {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--color-primary) 10%, transparent)';
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={e => {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
                             }}
                         >
-                            {showAll
-                                ? `Show Less`
-                                : `+${additionalTechnologies.length} More`
-                            }
-                        </Button>
-                    </Box>
-                </Box>
+                            {showAll ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                            {showAll ? 'Show Less' : `+${additionalTechnologies.length} More`}
+                        </button>
+                    </div>
+                </div>
             )}
-        </Box>
+        </div>
     );
 };
 

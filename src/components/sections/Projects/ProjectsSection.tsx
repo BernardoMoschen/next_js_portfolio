@@ -1,610 +1,642 @@
-import React from 'react';
-import {
-    Box,
-    Container,
-    Typography,
-    Grid,
-    Card,
-    CardContent,
-    CardMedia,
-    CardActions,
-    Button,
-    Chip,
-    Stack,
-    IconButton,
-    useTheme,
-    useMediaQuery,
-} from '@mui/material';
-import {
-    GitHub,
-    Launch,
-    Code,
-    Star,
-    CheckCircle,
-    Build,
-    Schedule,
-} from '@mui/icons-material';
+import React, { useRef, useState, useEffect } from 'react';
+import { FaGithub, FaExternalLinkAlt, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { projects } from '../../data/projectsData';
 import siteConfig from '../../../config/site';
+import { AnimateOnScroll, StaggerContainer, StaggerItem } from '../../utils/animations';
+import TiltCard from '../../utils/TiltCard';
+import SectionAnchor from '../../utils/SectionAnchor';
+import ProjectPreview from './ProjectPreview';
+import { useThemeMode } from '../../theme/ThemeContext';
+import { useI18n } from '../../../i18n';
 
-const getStatusInfo = (status: string) => {
-    switch (status) {
-        case 'completed':
-            return {
-                label: 'Completed',
-                color: 'success' as const,
-                icon: <CheckCircle />,
-            };
-        case 'wip':
-            return {
-                label: 'In Progress',
-                color: 'warning' as const,
-                icon: <Build />,
-            };
-        case 'planning':
-            return {
-                label: 'Coming Soon',
-                color: 'info' as const,
-                icon: <Schedule />,
-            };
-        default:
-            return {
-                label: 'AA',
-                color: 'success' as const,
-                icon: <CheckCircle />,
-            };
-    }
+const statusMap: Record<string, { label: string; color: string; bg: string }> = {
+    completed: { label: 'Completed', color: '#22c55e', bg: 'rgba(34,197,94,0.15)' },
+    wip: { label: 'In Progress', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
+    planning: { label: 'Coming Soon', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
 };
 
 const ProjectsSection: React.FC = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { darkMode } = useThemeMode();
+    const { t } = useI18n();
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
 
-    const featuredProjects = projects.filter(project => project.featured);
-    const otherProjects = projects.filter(project => !project.featured);
+    const featuredProjects = projects.filter(p => p.featured);
+    const otherProjects = projects.filter(p => !p.featured);
+
+    const updateScrollState = () => {
+        const el = scrollRef.current;
+        if (!el) return;
+        setCanScrollLeft(el.scrollLeft > 10);
+        setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+    };
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        updateScrollState();
+        el.addEventListener('scroll', updateScrollState, { passive: true });
+        window.addEventListener('resize', updateScrollState);
+        return () => {
+            el.removeEventListener('scroll', updateScrollState);
+            window.removeEventListener('resize', updateScrollState);
+        };
+    }, []);
+
+    const scroll = (direction: 'left' | 'right') => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const amount = 440;
+        el.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+    };
+
+    const cardWidth = 400;
+    const cardGap = 32;
 
     return (
-        <Box
-            component="section"
-            id="projects"
-            sx={{
-                py: { xs: 8, md: 12 },
-                background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.dark}12 25%, ${theme.palette.secondary.dark}18 75%, ${theme.palette.background.paper} 100%)`
-                    : `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.light}08 25%, ${theme.palette.secondary.light}12 75%, ${theme.palette.background.paper} 100%)`,
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-        >
-            {/* Background decorative elements */}
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '20%',
-                    right: '-10%',
-                    width: 300,
-                    height: 300,
-                    borderRadius: '50%',
-                    background: theme.palette.mode === 'dark'
-                        ? `radial-gradient(circle, ${theme.palette.primary.dark}15 0%, transparent 70%)`
-                        : `radial-gradient(circle, ${theme.palette.primary.light}10 0%, transparent 70%)`,
-                    filter: 'blur(40px)',
-                    animation: 'float 6s ease-in-out infinite',
-                }}
-            />
-            <Box
-                sx={{
-                    position: 'absolute',
-                    bottom: '10%',
-                    left: '-5%',
-                    width: 250,
-                    height: 250,
-                    borderRadius: '50%',
-                    background: theme.palette.mode === 'dark'
-                        ? `radial-gradient(circle, ${theme.palette.secondary.dark}15 0%, transparent 70%)`
-                        : `radial-gradient(circle, ${theme.palette.secondary.light}10 0%, transparent 70%)`,
-                    filter: 'blur(40px)',
-                    animation: 'float 8s ease-in-out infinite reverse',
-                }}
-            />
-
-            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                {/* Section badge */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                    <Chip
-                        icon={<Code />}
-                        label="FEATURED WORK"
-                        sx={{
-                            backgroundColor: theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.08)'
-                                : 'rgba(0, 0, 0, 0.04)',
-                            color: theme.palette.primary.main,
-                            fontWeight: 600,
-                            letterSpacing: '0.5px',
-                            border: `1px solid ${theme.palette.primary.main}`,
-                        }}
-                    />
-                </Box>
-
-                <Typography
-                    variant="h2"
-                    component="h2"
-                    sx={{
-                        textAlign: 'center',
-                        mb: 2,
-                        fontSize: isMobile ? '2.5rem' : '3.5rem',
-                        fontWeight: 700,
-                        background: theme.palette.mode === 'dark'
-                            ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.secondary.light} 100%)`
-                            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        textShadow: theme.palette.mode === 'dark' ? 'none' : '0 2px 4px rgba(0,0,0,0.1)',
-                    }}
-                >
-                    Featured Projects
-                </Typography>
-
-                <Typography
-                    variant="body1"
-                    sx={{
-                        textAlign: 'center',
-                        mb: 8,
-                        color: theme.palette.text.secondary,
-                        fontSize: '1.2rem',
-                        maxWidth: 700,
-                        mx: 'auto',
+        <div style={{
+            width: '100%',
+            minHeight: '100vh',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '80px 0',
+        }}>
+            {/* Section Header */}
+            <AnimateOnScroll>
+                <div className="section-inner" style={{ textAlign: 'center', marginBottom: 16 }}>
+                    <span className="mono" style={{
+                        color: 'var(--color-primary)',
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        display: 'block',
+                        marginBottom: 16,
+                    }}>
+                        {t.projects.label}
+                    </span>
+                    <div className="section-heading-group">
+                        <h2 className="gradient-text" style={{
+                            fontSize: 'clamp(3rem, 8vw, 5.5rem)',
+                            fontWeight: 800,
+                            lineHeight: 1,
+                            margin: '0 0 20px 0',
+                            letterSpacing: '-0.03em',
+                            background: 'linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+                            WebkitBackgroundClip: 'text',
+                            backgroundClip: 'text',
+                        }}>
+                            {t.projects.heading}
+                        </h2>
+                        <SectionAnchor sectionId="projects" />
+                    </div>
+                    <p className="mono" style={{
+                        color: 'var(--color-text-secondary)',
+                        fontSize: '1rem',
+                        maxWidth: 520,
+                        margin: '0 auto',
                         lineHeight: 1.6,
-                        fontWeight: 400,
-                    }}
-                >
-                    Here are some of my recent projects that showcase my skills and experience
-                    in full-stack development.
-                </Typography>
+                    }}>
+                        {t.projects.subtitle}
+                    </p>
+                </div>
+            </AnimateOnScroll>
 
-                {/* Featured Projects */}
-                <Grid container spacing={4} sx={{ mb: 10 }}>
-                    {featuredProjects.map((project, index) => (
-                        <Grid size={{ xs: 12, md: 6 }} key={index}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    background: theme.palette.mode === 'dark'
-                                        ? `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.dark}15 50%, ${theme.palette.secondary.dark}10 100%)`
-                                        : `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.light}08 50%, ${theme.palette.secondary.light}05 100%)`,
-                                    backdropFilter: 'blur(20px)',
-                                    border: theme.palette.mode === 'dark'
-                                        ? `1px solid ${theme.palette.primary.main}30`
-                                        : `1px solid ${theme.palette.primary.main}20`,
-                                    borderRadius: 3,
-                                    boxShadow: theme.palette.mode === 'dark'
-                                        ? `0 8px 32px ${theme.palette.primary.dark}25`
-                                        : `0 8px 32px ${theme.palette.primary.main}15`,
-                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-8px)',
-                                        boxShadow: theme.palette.mode === 'dark'
-                                            ? `0 20px 40px ${theme.palette.primary.dark}35`
-                                            : `0 20px 40px ${theme.palette.primary.main}25`,
-                                        borderColor: theme.palette.mode === 'dark'
-                                            ? `${theme.palette.primary.main}50`
-                                            : `${theme.palette.primary.main}40`,
-                                    },
-                                }}
-                            >
-                                <Box sx={{ position: 'relative' }}>
-                                    <CardMedia
-                                        component="div"
-                                        sx={{
-                                            height: 220,
-                                            background: theme.palette.mode === 'dark'
-                                                ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.dark}20 100%)`
-                                                : `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.light}15 100%)`,
-                                            display: 'flex',
+            {/* Scroll navigation arrows */}
+            <AnimateOnScroll delay={0.2}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '0 clamp(24px, 5vw, 80px)',
+                    marginBottom: 24,
+                }}>
+                    <span className="mono" style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--color-text-secondary)',
+                        marginRight: 8,
+                        opacity: 0.7,
+                    }}>
+                        {t.projects.scroll_hint}
+                    </span>
+                    <button
+                        onClick={() => scroll('left')}
+                        disabled={!canScrollLeft}
+                        className="glass-subtle"
+                        aria-label="Scroll left"
+                        style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            border: '1px solid var(--color-border)',
+                            background: 'var(--color-bg-glass)',
+                            color: canScrollLeft ? 'var(--color-text)' : 'var(--color-text-secondary)',
+                            cursor: canScrollLeft ? 'pointer' : 'default',
+                            opacity: canScrollLeft ? 1 : 0.3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 16,
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        <FaChevronLeft />
+                    </button>
+                    <button
+                        onClick={() => scroll('right')}
+                        disabled={!canScrollRight}
+                        className="glass-subtle"
+                        aria-label="Scroll right"
+                        style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            border: '1px solid var(--color-border)',
+                            background: 'var(--color-bg-glass)',
+                            color: canScrollRight ? 'var(--color-text)' : 'var(--color-text-secondary)',
+                            cursor: canScrollRight ? 'pointer' : 'default',
+                            opacity: canScrollRight ? 1 : 0.3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 16,
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        <FaChevronRight />
+                    </button>
+                </div>
+            </AnimateOnScroll>
+
+            {/* Horizontal scroll gallery */}
+            <div
+                ref={scrollRef}
+                style={{
+                    display: 'flex',
+                    gap: cardGap,
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingLeft: 'clamp(24px, 5vw, 80px)',
+                    paddingRight: 'clamp(24px, 5vw, 80px)',
+                    paddingTop: 16,
+                    paddingBottom: 24,
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                }}
+            >
+                <style>{`
+                    [data-scroll-strip]::-webkit-scrollbar { display: none; }
+                    .project-card-featured { position: relative; }
+                    .project-card-featured::before {
+                        content: '';
+                        position: absolute;
+                        inset: 0;
+                        border-radius: inherit;
+                        padding: 1px;
+                        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-primary), var(--color-secondary));
+                        background-size: 300% 300%;
+                        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                        -webkit-mask-composite: destination-out;
+                        mask-composite: exclude;
+                        opacity: 0;
+                        transition: opacity 0.4s ease;
+                        pointer-events: none;
+                    }
+                    .project-card-featured:hover::before {
+                        opacity: 1;
+                        animation: gradient-shift 3s ease infinite;
+                    }
+                    @keyframes gradient-shift {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                    .project-card-featured:hover {
+                        border-color: var(--color-primary) !important;
+                        box-shadow: 0 0 40px rgba(var(--color-primary-rgb, 99,102,241), 0.2),
+                                    0 20px 60px rgba(0,0,0,0.3) !important;
+                    }
+                    .project-card-other:hover {
+                        transform: translateY(-4px) !important;
+                        border-color: var(--color-primary) !important;
+                        box-shadow: 0 12px 32px rgba(0,0,0,0.2) !important;
+                    }
+                    .action-link:hover {
+                        color: var(--color-primary) !important;
+                        border-color: var(--color-primary) !important;
+                    }
+                `}</style>
+
+                <StaggerContainer staggerDelay={0.12} style={{
+                    display: 'flex',
+                    gap: cardGap,
+                    flexShrink: 0,
+                }}>
+                    {featuredProjects.map((project, index) => {
+                        const status = statusMap[project.status] || statusMap.completed;
+                        const num = String(index + 1).padStart(2, '0');
+
+                        return (
+                            <StaggerItem key={project.slug} style={{ flexShrink: 0 }}>
+                              <TiltCard style={{ borderRadius: 20, scrollSnapAlign: 'start' }}>
+                                <div
+                                    className="glass project-card-featured"
+                                    data-scroll-strip=""
+                                    style={{
+                                        width: cardWidth,
+                                        height: '78vh',
+                                        minHeight: 560,
+                                        maxHeight: 780,
+                                        borderRadius: 20,
+                                        border: '1px solid var(--color-border)',
+                                        padding: 36,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        transition: 'border-color 0.35s ease, box-shadow 0.35s ease',
+                                        cursor: 'default',
+                                    }}
+                                >
+                                    {/* Big faded number */}
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: -10,
+                                        right: 16,
+                                        fontSize: '10rem',
+                                        fontWeight: 900,
+                                        lineHeight: 1,
+                                        color: 'var(--color-text)',
+                                        opacity: darkMode ? 0.04 : 0.06,
+                                        pointerEvents: 'none',
+                                        userSelect: 'none',
+                                        letterSpacing: '-0.05em',
+                                    }}>
+                                        {num}
+                                    </span>
+
+                                    {/* Status badge */}
+                                    <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <span style={{
+                                            display: 'inline-flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            border: theme.palette.mode === 'dark'
-                                                ? `1px solid ${theme.palette.primary.main}20`
-                                                : `1px solid ${theme.palette.primary.main}15`,
-                                            borderTopLeftRadius: 12,
-                                            borderTopRightRadius: 12,
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                        }}
-                                    >
-                                        {/* Animated background pattern */}
-                                        <Box
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                right: 0,
-                                                bottom: 0,
-                                                background: theme.palette.mode === 'dark'
-                                                    ? `radial-gradient(circle at 30% 20%, ${theme.palette.primary.dark}30 0%, transparent 50%), radial-gradient(circle at 70% 80%, ${theme.palette.secondary.dark}25 0%, transparent 50%)`
-                                                    : `radial-gradient(circle at 30% 20%, ${theme.palette.primary.light}20 0%, transparent 50%), radial-gradient(circle at 70% 80%, ${theme.palette.secondary.light}15 0%, transparent 50%)`,
-                                                animation: 'pulse 4s ease-in-out infinite',
-                                            }}
-                                        />
-                                        <Code
-                                            sx={{
-                                                fontSize: 60,
-                                                color: theme.palette.primary.main,
-                                                opacity: 0.8,
-                                                zIndex: 1,
-                                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                                            }}
-                                        />
-                                    </CardMedia>
-
-                                    {/* Status and Featured Chips */}
-                                    <Box sx={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 1, flexDirection: 'column' }}>                        <Chip
-                                        icon={<Star />}
-                                        label="Featured"
-                                        size="small"
-                                        sx={{
-                                            backgroundColor: theme.palette.secondary.main,
-                                            '& .MuiChip-icon': {
-                                                color: theme.palette.success.contrastText,
-                                            },
-                                            color: theme.palette.secondary.contrastText,
+                                            gap: 6,
+                                            padding: '4px 12px',
+                                            borderRadius: 20,
+                                            fontSize: '0.75rem',
                                             fontWeight: 600,
-                                            boxShadow: `0 2px 8px rgba(0,0,0,0.2)`,
-                                        }}
-                                    />                        <Chip
-                                            icon={getStatusInfo(project.status).icon}
-                                            label={getStatusInfo(project.status).label}
-                                            size="small"
-                                            color={getStatusInfo(project.status).color}
-                                            variant="filled"
-                                            sx={{
-                                                fontWeight: 600,
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                                '&.MuiChip-colorSuccess': {
-                                                    backgroundColor: theme.palette.success.main,
-                                                    color: theme.palette.success.contrastText,
-                                                },
-                                                '&.MuiChip-colorWarning': {
-                                                    backgroundColor: theme.palette.warning.main,
-                                                    color: theme.palette.warning.contrastText,
-                                                },
-                                                '&.MuiChip-colorInfo': {
-                                                    backgroundColor: theme.palette.info.main,
-                                                    color: theme.palette.info.contrastText,
-                                                },
-                                                backgroundImage: 'none !important',
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
+                                            color: status.color,
+                                            background: status.bg,
+                                            border: `1px solid ${status.color}33`,
+                                        }}>
+                                            <span style={{
+                                                width: 6,
+                                                height: 6,
+                                                borderRadius: '50%',
+                                                background: status.color,
+                                            }} />
+                                            {status.label}
+                                        </span>
+                                        <span className="tag tag-primary" style={{
+                                            fontSize: '0.7rem',
+                                            padding: '3px 10px',
+                                        }}>
+                                            {t.projects.featured}
+                                        </span>
+                                    </div>
 
-                                <CardContent sx={{ flexGrow: 1, p: 4 }}>
-                                    <Typography
-                                        variant="h5"
-                                        component="h3"
-                                        sx={{
-                                            fontWeight: 700,
-                                            mb: 2,
-                                            color: theme.palette.primary.main,
-                                            fontSize: '1.4rem',
-                                        }}
-                                    >
+                                    {/* Interactive Preview */}
+                                    {project.preview && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <ProjectPreview project={project} compact />
+                                        </div>
+                                    )}
+
+                                    {/* Title */}
+                                    <h3 style={{
+                                        fontSize: '1.6rem',
+                                        fontWeight: 700,
+                                        color: 'var(--color-text)',
+                                        margin: '0 0 16px 0',
+                                        lineHeight: 1.2,
+                                    }}>
                                         {project.title}
-                                    </Typography>
+                                    </h3>
 
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            mb: 3,
-                                            lineHeight: 1.7,
-                                            color: theme.palette.text.secondary,
-                                            fontSize: '1rem',
-                                        }}
-                                    >
+                                    {/* Description */}
+                                    <p style={{
+                                        color: 'var(--color-text-secondary)',
+                                        fontSize: '0.92rem',
+                                        lineHeight: 1.65,
+                                        margin: '0 0 24px 0',
+                                        flex: '1 1 auto',
+                                        overflow: 'hidden',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 5,
+                                        WebkitBoxOrient: 'vertical',
+                                    }}>
                                         {project.description}
-                                    </Typography>
+                                    </p>
 
-                                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                                        {project.technologies.map((tech, techIndex) => (
-                                            <Chip
-                                                key={techIndex}
-                                                label={tech}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                    borderColor: theme.palette.primary.main,
-                                                    color: theme.palette.primary.main,
-                                                    fontSize: '0.8rem',
-                                                    fontWeight: 500,
-                                                    backgroundColor: 'transparent',
-                                                    '&:hover': {
-                                                        borderColor: theme.palette.primary.main,
-                                                        backgroundColor: theme.palette.mode === 'dark'
-                                                            ? 'rgba(255, 255, 255, 0.08)'
-                                                            : 'rgba(0, 0, 0, 0.04)',
-                                                    },
-                                                }}
-                                            />
+                                    {/* Tech tags */}
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 8,
+                                        marginBottom: 28,
+                                    }}>
+                                        {project.technologies.map((tech) => (
+                                            <span key={tech} className="tag tag-secondary" style={{
+                                                fontSize: '0.75rem',
+                                                padding: '4px 10px',
+                                            }}>
+                                                {tech}
+                                            </span>
                                         ))}
-                                    </Stack>
-                                </CardContent>
+                                    </div>
 
-                                <CardActions sx={{ p: 4, pt: 0, gap: 1 }}>
-                                    {project.githubUrl ? (
-                                        <Button
-                                            size="medium"
-                                            startIcon={<GitHub />}
-                                            href={project.githubUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            variant="outlined"
-                                            sx={{
-                                                color: theme.palette.text.secondary,
-                                                borderColor: `${theme.palette.text.secondary}60`,
-                                                '&:hover': {
-                                                    borderColor: theme.palette.text.secondary,
-                                                    backgroundColor: `${theme.palette.text.secondary}10`,
-                                                },
-                                            }}
-                                        >
-                                            Code
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            size="medium"
-                                            startIcon={getStatusInfo(project.status).icon}
-                                            disabled
-                                            sx={{ color: theme.palette.text.disabled }}
-                                        >
-                                            {project.status === 'wip' ? 'In Development' : 'Coming Soon'}
-                                        </Button>
-                                    )}
-                                    {project.liveUrl && (
-                                        <Button
-                                            size="medium"
-                                            startIcon={<Launch />}
-                                            href={project.liveUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            variant="contained"
-                                            sx={{
-                                                backgroundColor: theme.palette.primary.main,
-                                                color: theme.palette.primary.contrastText,
-                                                '&:hover': {
-                                                    backgroundColor: theme.palette.primary.dark,
-                                                },
-                                            }}
-                                        >
-                                            Live Demo
-                                        </Button>
-                                    )}
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-
-                {/* Other Projects */}
-                <Box sx={{ textAlign: 'center', mb: 6 }}>
-                    <Typography
-                        variant="h3"
-                        component="h3"
-                        sx={{
-                            fontSize: isMobile ? '2rem' : '2.5rem',
-                            fontWeight: 600,
-                            color: theme.palette.text.primary,
-                            mb: 2,
-                        }}
-                    >
-                        Other Projects
-                    </Typography>
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            color: theme.palette.text.secondary,
-                            fontSize: '1.1rem',
-                            maxWidth: 600,
-                            mx: 'auto',
-                        }}
-                    >
-                        Additional projects and experiments showcasing various technologies and concepts.
-                    </Typography>
-                </Box>
-
-                <Grid container spacing={3}>
-                    {otherProjects.map((project, index) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    background: theme.palette.mode === 'dark'
-                                        ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.dark}08 100%)`
-                                        : `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.light}05 100%)`,
-                                    border: theme.palette.mode === 'dark'
-                                        ? `1px solid ${theme.palette.primary.main}20`
-                                        : `1px solid ${theme.palette.primary.main}15`,
-                                    borderRadius: 2,
-                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        boxShadow: theme.palette.mode === 'dark'
-                                            ? `0 12px 24px ${theme.palette.primary.dark}30`
-                                            : `0 12px 24px ${theme.palette.primary.main}20`,
-                                        borderColor: theme.palette.mode === 'dark'
-                                            ? `${theme.palette.primary.main}40`
-                                            : `${theme.palette.primary.main}30`,
-                                    },
-                                }}
-                            >
-                                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                            <Typography
-                                                variant="h6"
-                                                component="h4"
-                                                sx={{
-                                                    fontWeight: 600,
-                                                    color: theme.palette.primary.main,
+                                    {/* Action links */}
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        marginTop: 'auto',
+                                        paddingTop: 16,
+                                        borderTop: '1px solid var(--color-border)',
+                                    }}>
+                                        {project.githubUrl ? (
+                                            <a
+                                                href={project.githubUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-outline action-link"
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 6,
+                                                    fontSize: '0.82rem',
+                                                    padding: '8px 16px',
+                                                    textDecoration: 'none',
+                                                    transition: 'all 0.2s ease',
                                                 }}
                                             >
-                                                {project.title}
-                                            </Typography>                            <Chip
-                                                icon={getStatusInfo(project.status).icon}
-                                                label={getStatusInfo(project.status).label}
-                                                size="small"
-                                                color={getStatusInfo(project.status).color}
-                                                variant="outlined"
-                                                sx={{
-                                                    fontSize: '0.75rem',
-                                                    backgroundImage: 'none !important',
+                                                <FaGithub /> {t.projects.code}
+                                            </a>
+                                        ) : (
+                                            <span className="btn btn-ghost" style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                fontSize: '0.82rem',
+                                                padding: '8px 16px',
+                                                opacity: 0.4,
+                                                cursor: 'default',
+                                            }}>
+                                                <FaGithub /> {project.status === 'wip' ? 'In Dev' : 'Soon'}
+                                            </span>
+                                        )}
+                                        {project.liveUrl && (
+                                            <a
+                                                href={project.liveUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn action-link"
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 6,
+                                                    fontSize: '0.82rem',
+                                                    padding: '8px 16px',
+                                                    textDecoration: 'none',
+                                                    transition: 'all 0.2s ease',
                                                 }}
-                                            />
-                                        </Box>
-                                        <Box>
-                                            {project.githubUrl ? (
-                                                <IconButton
-                                                    size="small"
-                                                    href={project.githubUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    sx={{
-                                                        color: theme.palette.text.secondary,
-                                                        '&:hover': {
-                                                            color: theme.palette.primary.main,
-                                                        },
-                                                    }}
-                                                >
-                                                    <GitHub fontSize="small" />
-                                                </IconButton>
-                                            ) : (
-                                                <IconButton
-                                                    size="small"
-                                                    disabled
-                                                    sx={{ color: theme.palette.text.disabled }}
-                                                >
-                                                    <GitHub fontSize="small" />
-                                                </IconButton>
-                                            )}
-                                            {project.liveUrl && (
-                                                <IconButton
-                                                    size="small"
-                                                    href={project.liveUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    sx={{
-                                                        color: theme.palette.primary.main,
-                                                        '&:hover': {
-                                                            color: theme.palette.primary.dark,
-                                                        },
-                                                    }}
-                                                >
-                                                    <Launch fontSize="small" />
-                                                </IconButton>
-                                            )}
-                                        </Box>
-                                    </Box>
+                                            >
+                                                <FaExternalLinkAlt size={12} /> {t.projects.live}
+                                            </a>
+                                        )}
+                                        {project.slug && (
+                                            <a
+                                                href={`/projects/${project.slug}`}
+                                                className="btn btn-ghost action-link"
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 6,
+                                                    fontSize: '0.82rem',
+                                                    padding: '8px 16px',
+                                                    marginLeft: 'auto',
+                                                    textDecoration: 'none',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                {t.projects.details} <FaArrowRight size={12} />
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                              </TiltCard>
+                            </StaggerItem>
+                        );
+                    })}
+                </StaggerContainer>
+            </div>
 
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            mb: 3,
-                                            lineHeight: 1.6,
-                                            color: theme.palette.text.secondary,
+            {/* Other Projects — 2-column grid */}
+            {otherProjects.length > 0 && (
+                <div className="section-inner" style={{ marginTop: 80 }}>
+                    <AnimateOnScroll>
+                        <div style={{ marginBottom: 40 }}>
+                            <h3 style={{
+                                fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+                                fontWeight: 700,
+                                color: 'var(--color-text)',
+                                margin: '0 0 8px 0',
+                            }}>
+                                {t.projects.other_heading}
+                            </h3>
+                            <p className="mono" style={{
+                                color: 'var(--color-text-secondary)',
+                                fontSize: '0.9rem',
+                                margin: 0,
+                            }}>
+                                {t.projects.other_subtitle}
+                            </p>
+                        </div>
+                    </AnimateOnScroll>
+
+                    <StaggerContainer staggerDelay={0.1} style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                        gap: 24,
+                    }}>
+                        {otherProjects.map((project) => {
+                            const status = statusMap[project.status] || statusMap.completed;
+
+                            return (
+                                <StaggerItem key={project.slug}>
+                                    <div
+                                        className="glass-subtle project-card-other"
+                                        style={{
+                                            borderRadius: 16,
+                                            border: '1px solid var(--color-border)',
+                                            padding: 28,
+                                            transition: 'transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
                                         }}
                                     >
-                                        {project.description}
-                                    </Typography>
-
-                                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                                        {project.technologies.slice(0, 3).map((tech, techIndex) => (
-                                            <Chip
-                                                key={techIndex}
-                                                label={tech}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                    borderColor: theme.palette.primary.main,
-                                                    color: theme.palette.text.secondary,
+                                        {/* Header row */}
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            marginBottom: 14,
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                                                <h4 style={{
+                                                    fontSize: '1.15rem',
+                                                    fontWeight: 600,
+                                                    color: 'var(--color-primary)',
+                                                    margin: 0,
+                                                }}>
+                                                    {project.title}
+                                                </h4>
+                                                <span style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 5,
+                                                    padding: '2px 10px',
+                                                    borderRadius: 12,
                                                     fontSize: '0.7rem',
-                                                    backgroundColor: 'transparent',
-                                                    '&:hover': {
-                                                        backgroundColor: theme.palette.mode === 'dark'
-                                                            ? 'rgba(255, 255, 255, 0.05)'
-                                                            : 'rgba(0, 0, 0, 0.03)',
-                                                    },
-                                                }}
-                                            />
-                                        ))}
-                                        {project.technologies.length > 3 && (
-                                            <Chip
-                                                label={`+${project.technologies.length - 3}`}
-                                                size="small"
-                                                variant="outlined"
-                                                sx={{
-                                                    borderColor: theme.palette.secondary.main,
-                                                    color: theme.palette.secondary.main,
-                                                    fontSize: '0.7rem',
-                                                    backgroundColor: 'transparent',
-                                                    '&:hover': {
-                                                        backgroundColor: theme.palette.mode === 'dark'
-                                                            ? 'rgba(255, 255, 255, 0.05)'
-                                                            : 'rgba(0, 0, 0, 0.03)',
-                                                    },
-                                                }}
-                                            />
-                                        )}
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
+                                                    fontWeight: 600,
+                                                    color: status.color,
+                                                    background: status.bg,
+                                                    border: `1px solid ${status.color}33`,
+                                                }}>
+                                                    <span style={{
+                                                        width: 5,
+                                                        height: 5,
+                                                        borderRadius: '50%',
+                                                        background: status.color,
+                                                    }} />
+                                                    {status.label}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 4 }}>
+                                                {project.githubUrl ? (
+                                                    <a
+                                                        href={project.githubUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="action-link"
+                                                        style={{
+                                                            color: 'var(--color-text-secondary)',
+                                                            padding: 6,
+                                                            transition: 'color 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <FaGithub size={16} />
+                                                    </a>
+                                                ) : (
+                                                    <span style={{
+                                                        color: 'var(--color-text-secondary)',
+                                                        opacity: 0.3,
+                                                        padding: 6,
+                                                    }}>
+                                                        <FaGithub size={16} />
+                                                    </span>
+                                                )}
+                                                {project.liveUrl && (
+                                                    <a
+                                                        href={project.liveUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="action-link"
+                                                        style={{
+                                                            color: 'var(--color-primary)',
+                                                            padding: 6,
+                                                            transition: 'color 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <FaExternalLinkAlt size={14} />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
 
-                {/* GitHub CTA */}
-                <Box sx={{ textAlign: 'center', mt: 8 }}>
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            mb: 3,
-                            color: theme.palette.text.secondary,
-                            fontSize: '1.1rem',
-                        }}
-                    >
-                        Want to see more? Check out my GitHub for additional projects and contributions.
-                    </Typography>
-                    <Button
-                        variant="outlined"
-                        size="large"
-                        startIcon={<GitHub />}
+                                        {/* Description */}
+                                        <p style={{
+                                            color: 'var(--color-text-secondary)',
+                                            fontSize: '0.88rem',
+                                            lineHeight: 1.6,
+                                            margin: '0 0 18px 0',
+                                        }}>
+                                            {project.description}
+                                        </p>
+
+                                        {/* Tech tags */}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                            {project.technologies.slice(0, 4).map((tech) => (
+                                                <span key={tech} className="tag tag-secondary" style={{
+                                                    fontSize: '0.7rem',
+                                                    padding: '3px 8px',
+                                                }}>
+                                                    {tech}
+                                                </span>
+                                            ))}
+                                            {project.technologies.length > 4 && (
+                                                <span className="tag" style={{
+                                                    fontSize: '0.7rem',
+                                                    padding: '3px 8px',
+                                                    opacity: 0.6,
+                                                }}>
+                                                    +{project.technologies.length - 4}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </StaggerItem>
+                            );
+                        })}
+                    </StaggerContainer>
+                </div>
+            )}
+
+            {/* GitHub CTA */}
+            <AnimateOnScroll>
+                <div className="section-inner" style={{
+                    textAlign: 'center',
+                    marginTop: 72,
+                }}>
+                    <p style={{
+                        color: 'var(--color-text-secondary)',
+                        fontSize: '1.05rem',
+                        marginBottom: 24,
+                    }}>
+                        {t.projects.github_cta}
+                    </p>
+                    <a
                         href={siteConfig.github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        sx={{
-                            borderColor: theme.palette.primary.main,
-                            color: theme.palette.primary.main,
+                        className="btn btn-outline"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '14px 32px',
+                            fontSize: '1rem',
                             fontWeight: 600,
-                            px: 4,
-                            py: 1.5,
-                            borderRadius: 2,
-                            '&:hover': {
-                                borderColor: theme.palette.primary.dark,
-                                backgroundColor: theme.palette.mode === 'dark'
-                                    ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(0, 0, 0, 0.04)',
-                                transform: 'translateY(-2px)',
-                            },
+                            textDecoration: 'none',
+                            transition: 'all 0.25s ease',
                         }}
                     >
-                        View GitHub Profile
-                    </Button>
-                </Box>
-            </Container>
-        </Box>
+                        <FaGithub size={18} /> {t.projects.github_btn}
+                    </a>
+                </div>
+            </AnimateOnScroll>
+        </div>
     );
 };
 

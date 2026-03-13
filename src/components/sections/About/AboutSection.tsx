@@ -1,178 +1,141 @@
 import React from 'react';
-import {
-    Box,
-    Container,
-    Typography,
-    Grid,
-    useTheme,
-    useMediaQuery,
-    Paper,
-    Chip,
-    Stack,
-} from '@mui/material';
-import {
-    Person,
-    Code,
-    Timeline,
-    AutoAwesome,
-} from '@mui/icons-material';
+import { FaCode, FaGlobeAmericas, FaWifi } from 'react-icons/fa';
 import { experiences } from '../../data/aboutData';
 import AboutContent from './AboutContent';
 import TechnicalExpertiseSection from '../Technical/TechnicalExpertiseSection';
 import ExperienceTimeline from './ExperienceTimeline';
+import { AnimateOnScroll } from '../../utils/animations';
+import SectionAnchor from '../../utils/SectionAnchor';
+import { useI18n } from '../../../i18n';
 
 const AboutSection: React.FC = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+    const { t } = useI18n();
     return (
-        <Box
-            component="section"
-            id="about"
-            sx={{
-                py: { xs: 8, md: 12 },
-                background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.dark}08 30%, ${theme.palette.secondary.dark}12 70%, ${theme.palette.background.default} 100%)`
-                    : `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.light}08 30%, ${theme.palette.secondary.light}12 70%, ${theme.palette.background.default} 100%)`,
+        <div
+            style={{
+                width: '100%',
+                minHeight: '100vh',
+                padding: 'clamp(2rem, 4vw, 3rem) 0',
+                background: 'var(--color-bg-glass)',
+                backdropFilter: 'blur(16px)',
                 position: 'relative',
-                overflow: 'hidden',
             }}
         >
-            {/* Background decorative elements */}
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    opacity: 0.1,
-                    backgroundImage: theme.palette.mode === 'dark'
-                        ? `radial-gradient(circle at 25% 25%, ${theme.palette.primary.main} 1px, transparent 1px),
-                           radial-gradient(circle at 75% 75%, ${theme.palette.secondary.main} 1px, transparent 1px)`
-                        : `radial-gradient(circle at 25% 25%, ${theme.palette.primary.main} 1px, transparent 1px),
-                           radial-gradient(circle at 75% 75%, ${theme.palette.secondary.main} 1px, transparent 1px)`,
-                    backgroundSize: '50px 50px, 30px 30px',
-                    backgroundPosition: '0 0, 25px 25px',
-                }}
-            />
+            <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', position: 'relative', zIndex: 1 }}>
+                {/* Header */}
+                <AnimateOnScroll>
+                    <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                        <div className="section-heading-group">
+                            <h2
+                                style={{
+                                    fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+                                    fontWeight: 800,
+                                    marginBottom: '0.75rem',
+                                    background: 'linear-gradient(180deg, var(--color-primary) 20%, var(--color-secondary) 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    lineHeight: 1.1,
+                                }}
+                            >
+                                {t.about.heading}
+                            </h2>
+                            <SectionAnchor sectionId="about" />
+                        </div>
 
-            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                {/* Enhanced Header Section */}
-                <Box sx={{ textAlign: 'center', mb: 8 }}>
-                    {/* Section Badge */}
-                    <Chip
-                        icon={<Person />}
-                        label="About Me"
-                        variant="outlined"
-                        sx={{
-                            mb: 3,
-                            borderColor: 'primary.main',
-                            color: 'primary.main',
-                            fontWeight: 600,
-                            fontSize: '0.9rem',
-                            px: 2,
-                            py: 0.5,
-                            '& .MuiChip-icon': {
-                                color: 'primary.main',
-                            },
-                        }}
-                    />
+                        <p
+                            style={{
+                                color: 'var(--color-text-secondary)',
+                                maxWidth: 600,
+                                margin: '0 auto 2rem',
+                                fontWeight: 400,
+                                lineHeight: 1.6,
+                                fontSize: 'clamp(0.95rem, 1.5vw, 1.1rem)',
+                            }}
+                        >
+                            {t.about.subtitle}
+                        </p>
 
-                    {/* Main Title */}
-                    <Typography
-                        variant="h2"
-                        component="h2"
-                        sx={{
-                            fontSize: isMobile ? '2.5rem' : '3.5rem',
-                            fontWeight: 800,
-                            mb: 2,
-                            background: theme.palette.mode === 'dark'
-                                ? `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`
-                                : `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            textShadow: 'none',
-                            position: 'relative',
+                        {/* Stats line */}
+                        <p
+                            style={{
+                                fontFamily: '"JetBrains Mono", monospace',
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                color: 'var(--color-text-secondary)',
+                                letterSpacing: '0.04em',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.75rem',
+                                flexWrap: 'wrap',
+                            }}
+                        >
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-primary)' }}>
+                                <FaCode size={14} /> {t.about.stats.years}
+                            </span>
+                            <span style={{ opacity: 0.4 }}>//</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-secondary)' }}>
+                                <FaGlobeAmericas size={14} /> {t.about.stats.countries}
+                            </span>
+                            <span style={{ opacity: 0.4 }}>//</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-primary)' }}>
+                                <FaWifi size={14} /> {t.about.stats.remote}
+                            </span>
+                        </p>
+                    </div>
+                </AnimateOnScroll>
+
+                {/* Content */}
+                <AnimateOnScroll delay={0.15}>
+                    <div
+                        className="glass"
+                        style={{
+                            borderRadius: 12,
+                            overflow: 'hidden',
+                            marginBottom: '3rem',
+                            border: '1px solid var(--color-border)',
                         }}
                     >
-                        Get to Know Me
-                    </Typography>
-
-                    {/* Subtitle */}
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            color: 'text.secondary',
-                            maxWidth: 600,
-                            mx: 'auto',
-                            fontWeight: 400,
-                            lineHeight: 1.6,
-                            mb: 4,
-                        }}
-                    >
-                        I like to build useful stuff, break things on purpose, and obsess over clean code and clever UIs.
-                    </Typography>
-
-                    {/* Quick Stats */}
-                    <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={2}
-                        justifyContent="center"
-                        alignItems="center"
-                        sx={{ mb: 2 }}
-                    >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Code sx={{ color: 'primary.main', fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                5+ Years Experience
-                            </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <AutoAwesome sx={{ color: 'secondary.main', fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                Full-Stack Engineer
-                            </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Timeline sx={{ color: 'primary.main', fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                Continuous Learner
-                            </Typography>
-                        </Box>
-                    </Stack>
-                </Box>
-
-                {/* Content Grid with Enhanced Styling */}
-                <Paper
-                    elevation={0}
-                    sx={{
-                        background: theme.palette.mode === 'dark'
-                            ? 'linear-gradient(135deg, rgba(22, 27, 34, 0.6) 0%, rgba(127, 176, 105, 0.05) 100%)'
-                            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(74, 103, 65, 0.03) 100%)',
-                        backdropFilter: 'blur(12px)',
-                        border: theme.palette.mode === 'dark'
-                            ? `1px solid ${theme.palette.primary.main}20`
-                            : `1px solid ${theme.palette.primary.main}15`,
-                        borderRadius: 3,
-                        p: { xs: 3, md: 4 },
-                        mb: 6,
-                        boxShadow: theme.palette.mode === 'dark'
-                            ? `0 20px 40px ${theme.palette.primary.main}15`
-                            : `0 20px 40px ${theme.palette.primary.main}10`,
-                    }}
-                >
-                    <Grid container >
-                        <AboutContent />
-                        <TechnicalExpertiseSection />
-                    </Grid>
-                </Paper>
+                        {/* Terminal title bar */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                padding: '12px 16px',
+                                borderBottom: '1px solid var(--color-border)',
+                                background: 'rgba(0, 0, 0, 0.15)',
+                            }}
+                        >
+                            <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+                            <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+                            <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                            <span
+                                style={{
+                                    marginLeft: 8,
+                                    fontFamily: '"JetBrains Mono", monospace',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--color-text-secondary)',
+                                    opacity: 0.7,
+                                }}
+                            >
+                                ~/about — profile.tsx
+                            </span>
+                        </div>
+                        <div style={{ padding: 'clamp(1.5rem, 3vw, 2rem)' }}>
+                            <AboutContent />
+                            <TechnicalExpertiseSection />
+                        </div>
+                    </div>
+                </AnimateOnScroll>
 
                 {/* Experience Timeline */}
-                <ExperienceTimeline experiences={experiences} />
-            </Container>
-        </Box>
+                <AnimateOnScroll delay={0.1}>
+                    <ExperienceTimeline experiences={experiences} />
+                </AnimateOnScroll>
+            </div>
+        </div>
     );
 };
 

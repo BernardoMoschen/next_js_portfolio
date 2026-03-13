@@ -1,10 +1,4 @@
-import React from 'react';
-import {
-    Fab,
-    Fade,
-    useTheme,
-} from '@mui/material';
-import { KeyboardArrowUp } from '@mui/icons-material';
+import React, { useState } from 'react';
 
 interface ScrollToTopButtonProps {
     show: boolean;
@@ -12,50 +6,55 @@ interface ScrollToTopButtonProps {
 }
 
 const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({ show, onClick }) => {
-    const theme = useTheme();
+    const [hovered, setHovered] = useState(false);
 
     return (
-        <Fade in={show}>
-            <Fab
-                size="medium"
-                aria-label="scroll back to top"
-                onClick={onClick}
-                sx={{
-                    position: 'fixed',
-                    bottom: 32,
-                    right: 32,
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                    color: 'white',
-                    border: `2px solid ${theme.palette.primary.main}40`,
-                    boxShadow: theme.palette.mode === 'dark'
-                        ? `0 8px 25px ${theme.palette.primary.main}40, 0 0 20px ${theme.palette.secondary.main}30`
-                        : `0 8px 25px ${theme.palette.primary.main}30, 0 0 15px ${theme.palette.secondary.main}20`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                        transform: 'translateY(-4px) scale(1.1)',
-                        boxShadow: theme.palette.mode === 'dark'
-                            ? `0 12px 35px ${theme.palette.primary.main}50, 0 0 25px ${theme.palette.secondary.main}40`
-                            : `0 12px 35px ${theme.palette.primary.main}40, 0 0 20px ${theme.palette.secondary.main}30`,
-                    },
-                    '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: -2,
-                        left: -2,
-                        right: -2,
-                        bottom: -2,
-                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                        borderRadius: '50%',
-                        zIndex: -1,
-                        opacity: 0.7,
-                        animation: 'pulse 2s infinite',
-                    },
-                    zIndex: 1000,
-                }}
+        <button
+            aria-label="scroll back to top"
+            onClick={onClick}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                position: 'fixed',
+                bottom: 32,
+                right: 32,
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: 'linear-gradient(45deg, var(--color-primary) 30%, var(--color-secondary) 90%)',
+                color: '#fff',
+                border: '2px solid var(--color-border)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                opacity: show ? 1 : 0,
+                pointerEvents: show ? 'auto' : 'none',
+                transform: show
+                    ? hovered
+                        ? 'translateY(-4px) scale(1.1)'
+                        : 'translateY(0) scale(1)'
+                    : 'translateY(20px) scale(0.8)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: hovered
+                    ? '0 12px 35px rgba(0,0,0,0.3)'
+                    : '0 8px 25px rgba(0,0,0,0.2)',
+            }}
+        >
+            <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
             >
-                <KeyboardArrowUp sx={{ fontSize: 28 }} />
-            </Fab>
-        </Fade>
+                <polyline points="18 15 12 9 6 15" />
+            </svg>
+        </button>
     );
 };
 

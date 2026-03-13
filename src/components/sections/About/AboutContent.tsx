@@ -1,99 +1,79 @@
-import React, { useState, type SyntheticEvent } from 'react';
-import {
-    Grid,
-    Box,
-    Typography,
-    useTheme,
-    useMediaQuery,
-} from '@mui/material';
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { briefList } from '../../data/aboutData';
 
 const AboutContent: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-
-    const handleChange = (_event: SyntheticEvent, newValue: number) => {
-        setSelectedTab(newValue);
-    };
 
     return (
-        <Grid size={{ xs: 12 }}>
-            <Box sx={{ mb: 4 }}>
-                <TabContext value={selectedTab}>
-                    <TabList
-                        onChange={handleChange}
-                        aria-label="about-section-tabs"
-                        variant={(isMobile || isTablet) ? "scrollable" : "standard"}
-                        scrollButtons={(isMobile || isTablet) ? "auto" : false}
-                        allowScrollButtonsMobile
-                        sx={{
-                            mb: 3,
-                            '& .MuiTabs-flexContainer': {
-                                justifyContent: (isMobile || isTablet) ? 'flex-start' : 'center',
-                            },
-                            '& .MuiTab-root': {
-                                minWidth: isMobile ? 100 : isTablet ? 110 : 120,
-                                fontSize: isMobile ? '0.75rem' : isTablet ? '0.85rem' : '1rem',
+        <div style={{ marginBottom: '2rem' }}>
+            {/* Tab buttons */}
+            <div
+                style={{
+                    display: 'flex',
+                    gap: '0.25rem',
+                    marginBottom: '1.5rem',
+                    overflowX: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollbarWidth: 'none',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                }}
+            >
+                {briefList.map(({ audience }, index) => {
+                    const isActive = selectedTab === index;
+                    return (
+                        <button
+                            key={index}
+                            onClick={() => setSelectedTab(index)}
+                            style={{
+                                padding: '0.5rem 1.25rem',
+                                fontSize: 'clamp(0.78rem, 1.2vw, 0.95rem)',
                                 fontWeight: 600,
-                                textTransform: 'none',
-                                color: theme.palette.text.secondary,
-                                px: isMobile ? 1 : isTablet ? 1.5 : 2,
-                                '&.Mui-selected': {
-                                    color: theme.palette.primary.main,
-                                },
-                            },
-                            '& .MuiTabs-indicator': {
-                                backgroundColor: theme.palette.primary.main,
-                                height: 3,
-                                borderRadius: '2px 2px 0 0',
-                            },
-                            '& .MuiTabs-scroller': {
-                                overflowX: (isMobile || isTablet) ? 'auto' : 'hidden',
-                            },
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: isActive
+                                    ? '3px solid var(--color-primary)'
+                                    : '3px solid transparent',
+                                color: isActive
+                                    ? 'var(--color-primary)'
+                                    : 'var(--color-text-secondary)',
+                                cursor: 'pointer',
+                                transition: 'color 0.2s, border-color 0.2s',
+                                whiteSpace: 'nowrap',
+                                fontFamily: 'inherit',
+                            }}
+                            aria-selected={isActive}
+                            role="tab"
+                        >
+                            {audience}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Tab content */}
+            <div role="tabpanel" style={{ padding: '0.5rem 0.5rem' }}>
+                <AnimatePresence mode="wait">
+                    <motion.p
+                        key={selectedTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                        style={{
+                            lineHeight: 1.7,
+                            color: 'var(--color-text-secondary)',
+                            fontSize: 'clamp(0.9rem, 1.3vw, 1.1rem)',
+                            textAlign: 'justify',
+                            maxWidth: '100%',
                         }}
                     >
-                        {briefList.map(({ audience }, index) => (
-                            <Tab
-                                key={index}
-                                label={audience}
-                                value={index}
-                            />
-                        ))}
-                    </TabList>
-                    {briefList.map(({ brief }, index) => (
-                        <TabPanel
-                            key={index}
-                            value={index}
-                            sx={{
-                                px: isMobile ? 1 : 3,
-                                py: 2,
-                            }}
-                        >
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    mb: 3,
-                                    lineHeight: 1.7,
-                                    color: 'text.secondary',
-                                    fontSize: isMobile ? '0.9rem' : isTablet ? '1rem' : '1.1rem',
-                                    textAlign: isMobile ? 'left' : 'justify',
-                                    maxWidth: '100%',
-                                    px: isMobile ? 0 : 1,
-                                }}
-                            >
-                                {brief}
-                            </Typography>
-                        </TabPanel>
-                    ))}
-                </TabContext>
-            </Box>
-        </Grid >
+                        {briefList[selectedTab].brief}
+                    </motion.p>
+                </AnimatePresence>
+            </div>
+        </div>
     );
 };
 

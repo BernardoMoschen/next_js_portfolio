@@ -7,6 +7,7 @@ export const menuItems: MenuItem[] = [
     { label: 'Home', href: '#hero' },
     { label: 'About', href: '#about' },
     { label: 'Projects', href: '#projects' },
+    { label: 'Certifications', href: '#certifications' },
     { label: 'Contact', href: '#contact' },
 ];
 

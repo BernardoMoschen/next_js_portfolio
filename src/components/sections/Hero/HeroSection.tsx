@@ -1,100 +1,257 @@
-import React from 'react';
-import {
-    Box,
-    Container,
-    useTheme,
-    useMediaQuery,
-} from '@mui/material';
-import {
-    ProfileAvatar,
-    HeroText,
-    ActionButtons,
-    ScrollIndicator,
-    BackgroundElements,
-} from './components';
-import { PERSONAL_INFO, scrollToSection } from './utils';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { HiMail } from 'react-icons/hi';
+import { HiChevronDown } from 'react-icons/hi2';
+import { siteConfig } from '../../../config/site';
+import ProfileAvatar from './components/ProfileAvatar';
+import { scrollToSection } from './utils';
+import { useI18n } from '../../../i18n';
+
+function useTypingEffect(text: string, startDelay: number, charDelay = 40) {
+  const [displayText, setDisplayText] = useState('');
+  const [showCursor, setShowCursor] = useState(false);
+  const reducedMotion = useRef(false);
+
+  useEffect(() => {
+    reducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion.current) {
+      setDisplayText(text);
+      return;
+    }
+
+    const startTimer = setTimeout(() => {
+      setShowCursor(true);
+      let i = 0;
+      const interval = setInterval(() => {
+        i++;
+        setDisplayText(text.slice(0, i));
+        if (i >= text.length) {
+          clearInterval(interval);
+          // Cursor blinks for 2s then disappears
+          setTimeout(() => setShowCursor(false), 2000);
+        }
+      }, charDelay);
+      return () => clearInterval(interval);
+    }, startDelay);
+
+    return () => clearTimeout(startTimer);
+  }, [text, startDelay, charDelay]);
+
+  return { displayText, showCursor };
+}
 
 const HeroSection: React.FC = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-    return (
-        <Box
-            component="section"
-            id="hero"
-            sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.dark}20 50%, ${theme.palette.secondary.dark}30 100%)`
-                    : `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.primary.light}10 50%, ${theme.palette.secondary.light}20 100%)`,
-                position: 'relative',
-                overflow: 'hidden',
-                pt: { xs: 12, sm: 12 },
-                pb: isMobile ? 8 : 0,
-            }}
+  const { t } = useI18n();
+  const titleText = `{ ${t.hero.title} }`;
+  const { displayText, showCursor } = useTypingEffect(titleText, 600, 40);
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        padding: '5rem 1.5rem 2rem',
+      }}
+    >
+      {/* Main content — centered vertically */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2rem',
+          maxWidth: '64rem',
+          width: '100%',
+          textAlign: 'center',
+        }}
+      >
+        {/* Profile photo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
-            <BackgroundElements />
-            <Container maxWidth="lg" sx={{
-                position: 'relative',
-                zIndex: 1,
-                py: isMobile ? 4 : 0,
-                px: { xs: 6, sm: 4, md: 3 },
-            }}>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: isMobile ? 'column' : 'row',
-                        alignItems: 'center',
-                        gap: isMobile ? 4 : 16,
-                        textAlign: isMobile ? 'center' : 'left',
-                        minHeight: isMobile ? 'auto' : '80vh',
-                        width: '100%',
-                        px: isMobile ? 1 : 0,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            flex: isMobile ? 'none' : '0 0 auto',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            width: isMobile ? '100%' : 'auto',
-                        }}
-                    >
-                        <ProfileAvatar
-                            isMobile={isMobile}
-                            profileImage={PERSONAL_INFO.profileImage}
-                            name={PERSONAL_INFO.name}
-                            initials={PERSONAL_INFO.initials}
-                            githubUrl={PERSONAL_INFO.social.github}
-                            linkedinUrl={PERSONAL_INFO.social.linkedin}
-                        />
-                    </Box>
-                    <Box
-                        sx={{
-                            flex: 1,
-                            maxWidth: isMobile ? '100%' : 600,
-                            ml: isMobile ? 0 : 2,
-                            mr: isMobile ? 0 : 4,
-                        }}
-                    >
-                        <HeroText
-                            isMobile={isMobile}
-                            name={PERSONAL_INFO.name}
-                            title={PERSONAL_INFO.title}
-                            description={PERSONAL_INFO.description}
-                        />
-                        <ActionButtons
-                            isMobile={isMobile}
-                            onContactClick={() => scrollToSection('contact')}
-                        />
-                    </Box>
-                </Box>
-                <ScrollIndicator onScrollClick={() => scrollToSection('about')} />
-            </Container>
-        </Box>
-    );
+          <ProfileAvatar
+            profileImage={siteConfig.profileImage}
+            name={siteConfig.name}
+          />
+        </motion.div>
+
+        {/* Name — dramatic oversized */}
+        <motion.h1
+          className="gradient-text"
+          style={{
+            fontSize: 'clamp(3rem, 8vw, 7rem)',
+            fontWeight: 800,
+            lineHeight: 1,
+            letterSpacing: '-0.04em',
+            margin: 0,
+          }}
+        >
+          {siteConfig.name.split(' ').map((word, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: i === 0 ? 0.2 : 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+              style={{ display: 'block' }}
+            >
+              {word}
+            </motion.span>
+          ))}
+        </motion.h1>
+
+        {/* Title — mono, gradient, typing effect */}
+        <p
+          className="mono gradient-text"
+          style={{
+            fontSize: 'clamp(1rem, 2vw, 1.35rem)',
+            fontWeight: 500,
+            margin: 0,
+            letterSpacing: '-0.01em',
+            minHeight: '1.5em',
+          }}
+        >
+          {displayText}
+          {showCursor && (
+            <span
+              style={{
+                display: 'inline-block',
+                width: '2px',
+                height: '1.1em',
+                backgroundColor: 'var(--color-primary)',
+                marginLeft: '2px',
+                verticalAlign: 'text-bottom',
+                animation: 'blink-cursor 0.6s step-end infinite',
+              }}
+            />
+          )}
+          <style>{`@keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`}</style>
+        </p>
+
+        {/* Location tag */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <span className="tag" style={{ fontSize: '0.8rem' }}>
+            {t.hero.location}
+          </span>
+        </motion.div>
+
+        {/* CTAs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          style={{
+            display: 'flex',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
+          <button
+            className="btn btn-primary"
+            onClick={() => scrollToSection('projects')}
+          >
+            {t.hero.cta_projects}
+          </button>
+          <a
+            className="btn btn-outline"
+            href="/resume.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.hero.cta_resume}
+          </a>
+        </motion.div>
+
+        {/* Social links */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.65 }}
+          style={{
+            display: 'flex',
+            gap: '0.75rem',
+            alignItems: 'center',
+          }}
+        >
+          <a
+            href={siteConfig.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+            className="social-icon-link"
+          >
+            <FaGithub size={18} />
+          </a>
+          <a
+            href={siteConfig.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn"
+            className="social-icon-link"
+          >
+            <FaLinkedin size={18} />
+          </a>
+          <a
+            href={`mailto:${siteConfig.email}`}
+            aria-label="Email"
+            className="social-icon-link"
+          >
+            <HiMail size={20} />
+          </a>
+        </motion.div>
+      </div>
+
+      {/* Scroll indicator — bottom center */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1 }}
+        onClick={() => scrollToSection('about')}
+        style={{
+          position: 'absolute',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.25rem',
+        }}
+      >
+        <span
+          className="mono"
+          style={{
+            fontSize: '0.65rem',
+            color: 'var(--color-text-secondary)',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {t.hero.scroll}
+        </span>
+        <motion.div
+          animate={{ y: [0, 6, 0], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ color: 'var(--color-primary)', filter: 'drop-shadow(0 0 8px var(--color-primary))' }}
+        >
+          <HiChevronDown size={24} />
+        </motion.div>
+      </motion.div>
+    </div>
+  );
 };
 
 export default HeroSection;

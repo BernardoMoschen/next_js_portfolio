@@ -32,22 +32,22 @@ export const briefList: AudienceBrief[] = [
     {
         audience: 'For anyone',
         brief:
-            'I translate human needs into code, caring about the little details most people never see: create something that matters — not just something that works.',
+            "I care about the details most people never see — the loading state that feels right, the API response that's 200ms faster, the code a teammate reads six months later and actually understands. I've shipped products in Brazil, Canada, and remotely for international teams. I build things that matter, not just things that work.",
     },
     {
         audience: 'Recruiters',
         brief:
-            "I'm a Full Stack engineer with a proven track record in building reliable, scalable solutions. With expertise in modern technologies and a commitment to clean code, I deliver results that drive business success.",
+            "5+ years, 3 countries, 4 industries. I led the dev of automation tools at a telecom that directly boosted revenue. I built a platform serving ~20 educational institutions and thousands of students. I shipped a real-time data system for ArcelorMittal's mining operations in Canada — remotely from Brazil. TypeScript full-stack, comfortable owning projects end-to-end or contributing to larger teams.",
     },
     {
         audience: 'Product Managers',
         brief:
-            "I bring end-to-end technical expertise to support your product journey, from discovery to delivery. I'll collaborate closely to align technical execution with your product vision, maximizing impact at every stage.",
+            "I don't just build what's in the ticket — I ask why. At Paradise Mobile, I pushed for self-service onboarding flows that reduced user drop-off. At Grupo Tiradentes, I helped consolidate 20 institutional systems into one. I think in user outcomes, flag technical risks early, and ship incrementally. If something can be validated simpler and sooner, I'll push for that.",
     },
     {
         audience: 'Engineers',
         brief:
-            "I'm a engineer who values efficiency, maintainability, and collaboration. I write clean, scalable code, optimize performance, and contribute to a strong engineering culture by sharing knowledge and solving challenges together.",
+            "React + TypeScript is home base, but I've shipped production code in Node, NestJS, .NET/C#, and even PHP when needed. I've worked across PostgreSQL, SQL Server, MongoDB, and MySQL — whatever the project requires. I like clean abstractions, pragmatic testing, and code reviews that teach me something. I value teams that ship fast, refactor deliberately, and don't over-engineer.",
     },
 ];
 
@@ -129,12 +129,10 @@ export const experiences: Experience[] = [
         companyUrl: 'https://www.linkedin.com/company/paradise-mobile/about',
         period: '2024 - Present',
         description: [
-            `Developed onboarding and self-service applications using React, Material UI, Recoil, and Jest,
-            streamlining user experience and improving onboarding time by significantly reducing friction;`,
-            'Built and maintained scalable REST APIs and midtier systems with Node.js, TypeScript, SonarQube, GraphQL and AWS, supporting formidable CRM interrelation;',
-            'Led the creation of back - office support tools that significantly boosted revenue and lowered operational costs; ',
-            'Integrated key external platforms such as Zapier, Webflow, Zendesk and headless Strapi to enhance customer support and automation; ',
-            'Collaborated effectively within both Kanban and Scrum - based agile teams;',
+            'Built self-service onboarding flows (React, Recoil, Jest) that measurably reduced user drop-off rates across the telecom platform',
+            'Designed REST APIs and midtier services (Node.js, TypeScript, GraphQL, AWS) powering a CRM serving ~10K+ customers',
+            'Led dev of back-office automation tools that directly boosted support team revenue by replacing manual workflows with integrated pipelines',
+            'Unified 4+ external platforms (Zapier, Webflow, Zendesk, Strapi) into a single automation layer — from ticket routing to customer onboarding',
         ],
         iconType: 'work',
     },
@@ -144,11 +142,9 @@ export const experiences: Experience[] = [
         companyUrl: 'https://www.linkedin.com/company/grupo-tiradentes/about',
         period: '2022 - 2023',
         description: [
-            `Developed a unified system for educational institutions, managing course offerings, student
-contracts, financing requests and business reporting, ensuring robust functionality and code quality;`,
-            'Designed and implemented scalable front-end interfaces with React.js and Typescript, enhancing user experience for the whole company staff and their students',
-            'Engineered back-end systems and APIs with C#, .NET, and PostgreSQL, streamlining workflows for transactions and users daily;',
-            'Collaborated in 100% SCRUM-based teams;'
+            'Consolidated ~20 educational institutions into one unified platform — enrollment, contracts, financing, and reporting in a single system used daily by thousands',
+            'Built the React + TypeScript frontend serving administrative staff and students across the entire institution network',
+            'Engineered C#/.NET + PostgreSQL backend handling high-volume enrollment transactions with robust data integrity',
         ],
         iconType: 'work',
     },
@@ -158,10 +154,9 @@ contracts, financing requests and business reporting, ensuring robust functional
         companyUrl: 'https://www.linkedin.com/company/arcelormittal/about',
         period: '2021 - 2022',
         description: [
-            `Led the development of a web application for seamless integration of virtual and manual data, automating complex and manual processes, digitally transforming the way the corporation worked;`,
-            'Orchestrated scalable system architecture with Node.js, Sequelize.js, and Microsoft SQL Server, enabling robust data integration across diverse systems;',
-            'Implemented front-end interfaces with React.js and ensured code quality with Jest and Typescript, enhancing user experience all while providing innovative and productive ways of working;',
-            'Collaborated in 100% SCRUM-based teams;'
+            'Led development of a real-time data integration platform processing 50K+ sensor readings/day — replaced error-prone manual data entry entirely',
+            'Architected Node.js + Sequelize.js + SQL Server backend for automated merging of virtual models with physical sensor data',
+            'Shipped from Brazil as part of a fully remote international team — daily coordination across time zones with Canadian stakeholders',
         ],
         iconType: 'work',
     },
@@ -171,10 +166,9 @@ contracts, financing requests and business reporting, ensuring robust functional
         companyUrl: 'https://www.linkedin.com/company/metaoficial/about/',
         period: '2021 - 2021',
         description: [
-            `Coordinated different teams and participated in several projects across different fields of the market;`,
-            'Leveraged an wide range of technologies such as: Typescript, React, Vue, PHP, TypeORM, Adonis.js,Nest.js and many others;',
-            'Managed multiple databases: MySQL, SQL, Postgres, MongoDB and SQL Server;',
-            'Collaborated in 100% SCRUM-based teams;'
+            'Delivered features across multiple client projects simultaneously — React, Vue, PHP, NestJS, and Adonis.js depending on the engagement',
+            'Worked across 5+ database systems (MySQL, PostgreSQL, MongoDB, SQL Server) adapting to each project\'s architecture',
+            'Agency environment: tight deadlines, diverse codebases, rapid context-switching — built the adaptability that defined my career since',
         ],
         iconType: 'work',
     },

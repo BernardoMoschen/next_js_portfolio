@@ -1,120 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import {
-    AppBar,
-    Toolbar,
-    useTheme,
-    useMediaQuery,
-    useScrollTrigger,
-} from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import MobileNavigation from './MobileNavigation';
 import DesktopNavigation from './DesktopNavigation';
 import BrandLogo from './BrandLogo';
 import ScrollToTopButton from './ScrollToTopButton';
 import { menuItems, scrollToSection, scrollToTop } from './utils';
+import { useI18n } from '../../../i18n';
+
+function useIsMobile(breakpoint = 768) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
+        const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+        handler(mql);
+        mql.addEventListener('change', handler as (e: MediaQueryListEvent) => void);
+        return () => mql.removeEventListener('change', handler as (e: MediaQueryListEvent) => void);
+    }, [breakpoint]);
+
+    return isMobile;
+}
 
 const NavigationContainer: React.FC = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isMobile = useIsMobile();
+    const { t } = useI18n();
+
+    const navLabelMap: Record<string, string> = {
+        Home: t.nav.home,
+        About: t.nav.about,
+        Projects: t.nav.projects,
+        Certifications: t.certifications.nav,
+        Contact: t.nav.contact,
+    };
+    const translatedMenuItems = menuItems.map(item => ({
+        ...item,
+        label: navLabelMap[item.label] || item.label,
+    }));
     const [mobileOpen, setMobileOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('hero');
+    const [scrolled, setScrolled] = useState(false);
+    const rafId = useRef(0);
 
-    const trigger = useScrollTrigger({
-        disableHysteresis: true,
-        threshold: 100,
-    });
+    // Single consolidated scroll handler using rAF throttle
+    const handleScroll = useCallback(() => {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+            setScrolled(scrollY > 100);
 
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
+            // Track active section
+            const sections = ['hero', 'about', 'projects', 'certifications', 'contact'];
+            const scrollPosition = scrollY + 100;
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + element.offsetHeight) {
+                        setActiveSection(section);
+                        break;
+                    }
+                }
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            cancelAnimationFrame(rafId.current);
+        };
+    }, [handleScroll]);
 
     const handleMenuClick = (sectionId: string) => {
         scrollToSection(sectionId);
         setMobileOpen(false);
     };
 
-    const handleBrandClick = () => {
-        scrollToSection('#hero');
-    };
-
-    // Track active section based on scroll position
-    useEffect(() => {
-        const handleScroll = () => {
-            const sections = ['hero', 'about', 'projects', 'contact'];
-            const scrollPosition = window.scrollY + 100;
-
-            for (const section of sections) {
-                const element = document.getElementById(section);
-                if (element) {
-                    const offsetTop = element.offsetTop;
-                    const offsetBottom = offsetTop + element.offsetHeight;
-
-                    if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
-                        setActiveSection(section);
-                        break;
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     return (
         <>
-            <AppBar
-                position="fixed"
-                sx={{
-                    backgroundColor: trigger
-                        ? theme.palette.mode === 'dark'
-                            ? `${theme.palette.background.default}F0`
-                            : `${theme.palette.background.default}F0`
-                        : 'transparent',
-                    backdropFilter: trigger ? 'blur(15px)' : 'none',
-                    boxShadow: trigger
-                        ? theme.palette.mode === 'dark'
-                            ? `0 8px 32px ${theme.palette.primary.main}30, 0 2px 8px rgba(0, 0, 0, 0.4)`
-                            : `0 8px 32px ${theme.palette.primary.main}20, 0 2px 8px rgba(0, 0, 0, 0.1)`
+            <header
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 1100,
+                    backgroundColor: scrolled ? 'var(--color-bg-glass)' : 'transparent',
+                    backdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
+                    WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
+                    boxShadow: scrolled
+                        ? '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
                         : 'none',
+                    borderBottom: scrolled ? '1px solid var(--color-border)' : '1px solid transparent',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    border: trigger
-                        ? `1px solid ${theme.palette.mode === 'dark' ? theme.palette.primary.main + '30' : theme.palette.primary.main + '20'}`
-                        : 'none',
-                    '&::before': {
-                        content: '""',
+                }}
+            >
+                {/* Top accent line */}
+                <div
+                    style={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: '2px',
-                        background: trigger
-                            ? `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.primary.main} 100%)`
+                        height: 2,
+                        background: scrolled
+                            ? 'linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 50%, var(--color-primary) 100%)'
                             : 'transparent',
-                        opacity: trigger ? 1 : 0,
+                        opacity: scrolled ? 1 : 0,
                         transition: 'opacity 0.4s ease',
-                    },
-                }}
-            >
-                <Toolbar sx={{ minHeight: { xs: 64, sm: 72 } }}>
-                    <BrandLogo trigger={trigger} onClick={handleBrandClick} />
+                    }}
+                />
+
+                <nav
+                    aria-label="Main navigation"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        minHeight: isMobile ? 64 : 72,
+                        padding: '0 24px',
+                        maxWidth: 1200,
+                        margin: '0 auto',
+                        width: '100%',
+                    }}
+                >
+                    <BrandLogo trigger={scrolled} onClick={() => scrollToSection('#hero')} />
                     {isMobile ? (
                         <MobileNavigation
                             open={mobileOpen}
-                            onToggle={handleDrawerToggle}
+                            onToggle={() => setMobileOpen(!mobileOpen)}
                             onMenuClick={handleMenuClick}
                             activeSection={activeSection}
+                            menuItems={translatedMenuItems}
                         />
                     ) : (
                         <DesktopNavigation
-                            menuItems={menuItems}
+                            menuItems={translatedMenuItems}
                             activeSection={activeSection}
                             onMenuClick={handleMenuClick}
                         />
                     )}
-                </Toolbar>
-            </AppBar>
-            <ScrollToTopButton show={trigger} onClick={scrollToTop} />
+                </nav>
+            </header>
+            <ScrollToTopButton show={scrolled} onClick={scrollToTop} />
         </>
     );
 };

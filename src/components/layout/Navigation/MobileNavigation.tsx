@@ -1,13 +1,18 @@
 import React from 'react';
 import MobileMenuButton from './MobileMenuButton';
 import MobileDrawer from './MobileDrawer';
-import { menuItems } from './utils';
+
+interface MenuItem {
+    label: string;
+    href: string;
+}
 
 interface MobileNavigationProps {
     open: boolean;
     onToggle: () => void;
     onMenuClick: (sectionId: string) => void;
     activeSection: string;
+    menuItems: MenuItem[];
 }
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
@@ -15,6 +20,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     onToggle,
     onMenuClick,
     activeSection,
+    menuItems,
 }) => {
     return (
         <>

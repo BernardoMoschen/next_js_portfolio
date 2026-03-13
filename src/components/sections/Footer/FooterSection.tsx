@@ -1,143 +1,127 @@
-import React from 'react';
-import {
-    Box,
-    Container,
-    Typography,
-    IconButton,
-    Stack,
-    Divider,
-    useTheme,
-    useMediaQuery,
-} from '@mui/material';
-import {
-    GitHub,
-    LinkedIn,
-    Email,
-    Favorite,
-} from '@mui/icons-material';
+import React, { useState } from 'react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { HiMail } from 'react-icons/hi';
 import siteConfig from '../../../config/site';
+import { useI18n } from '../../../i18n';
+import { AnimateOnScroll } from '../../utils/animations';
+
+const socialLinks = [
+  { icon: FaGithub, label: 'GitHub', url: siteConfig.github },
+  { icon: FaLinkedin, label: 'LinkedIn', url: siteConfig.linkedin },
+  { icon: HiMail, label: 'Email', url: `mailto:${siteConfig.email}` },
+];
 
 const FooterSection: React.FC = () => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useI18n();
+  const [topHover, setTopHover] = useState(false);
 
-    const socialLinks = [
-        {
-            icon: <GitHub />,
-            label: 'GitHub',
-            url: siteConfig.github,
-        },
-        {
-            icon: <LinkedIn />,
-            label: 'LinkedIn',
-            url: siteConfig.linkedin,
-        },
-        {
-            icon: <Email />,
-            label: 'Email',
-            url: `mailto:${siteConfig.email}`,
-        },
-    ];
+  return (
+    <footer
+      id="footer"
+      style={{
+        position: 'relative',
+        background: 'var(--color-bg-glass)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        padding: '2rem 1.5rem 1.5rem',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1rem',
+      }}
+    >
+      {/* Top gradient border */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary))',
+        }}
+      />
 
-    const currentYear = new Date().getFullYear();
-
-    return (
-        <Box
-            component="footer"
-            sx={{
-                backgroundColor: 'background.paper',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                py: 4,
-                mt: 'auto',
-            }}
+      <AnimateOnScroll>
+        {/* Terminal session ended */}
+        <div
+          className="mono"
+          style={{
+            color: 'var(--color-text-muted)',
+            fontSize: '0.8rem',
+            marginBottom: '0.5rem',
+          }}
         >
-            <Container maxWidth="lg">
-                <Stack
-                    direction={isMobile ? 'column' : 'row'}
-                    spacing={3}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    {/* Logo/Name */}
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 600,
-                            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                        }}
-                    >
-                        {siteConfig.name}
-                    </Typography>
+          <div>$ exit 0</div>
+          <div>&gt; Session terminated. Thanks for scrolling.</div>
+        </div>
 
-                    {/* Social Links */}
-                    <Stack direction="row" spacing={1}>
-                        {socialLinks.map((social, index) => (
-                            <IconButton
-                                key={index}
-                                href={social.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{
-                                    color: 'text.secondary',
-                                    '&:hover': {
-                                        color: 'primary.main',
-                                        transform: 'translateY(-2px)',
-                                    },
-                                    transition: 'all 0.3s ease',
-                                }}
-                                aria-label={social.label}
-                            >
-                                {social.icon}
-                            </IconButton>
-                        ))}
-                    </Stack>
-                </Stack>
+        {/* Brand */}
+        <span
+          className="gradient-text mono"
+          style={{
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+          }}
+        >
+          bernardo.moschen
+        </span>
 
-                <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+        {/* Social icons */}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'center', marginTop: '1rem' }}>
+          {socialLinks.map(({ icon: Icon, label, url }) => (
+            <a
+              key={label}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label}
+              className="social-icon-link"
+              style={{ fontSize: '1.15rem' }}
+            >
+              <Icon />
+            </a>
+          ))}
+        </div>
 
-                {/* Copyright */}
-                <Stack
-                    direction={isMobile ? 'column' : 'row'}
-                    spacing={2}
-                    alignItems="center"
-                    justifyContent="space-between"
-                >
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            color: 'text.secondary',
-                            textAlign: isMobile ? 'center' : 'left',
-                        }}
-                    >
-                        © {currentYear} {siteConfig.name}. All rights reserved.
-                    </Typography>
+        {/* Back to top */}
+        <div
+          className="mono"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onMouseEnter={() => setTopHover(true)}
+          onMouseLeave={() => setTopHover(false)}
+          style={{
+            cursor: 'pointer',
+            color: topHover ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            fontSize: '0.8rem',
+            marginTop: '0.75rem',
+            transition: 'color 0.25s ease',
+          }}
+        >
+          $ cd /home ↑
+        </div>
 
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            color: 'text.secondary',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            textAlign: isMobile ? 'center' : 'right',
-                        }}
-                    >
-                        Made with{' '}
-                        <Favorite
-                            sx={{
-                                fontSize: '1rem',
-                                color: 'secondary.main',
-                                animation: 'pulse 2s infinite',
-                            }}
-                        />{' '}
-                        using Astro & Material UI                </Typography>
-                </Stack>
-            </Container>
-        </Box>
-    );
+        {/* Copyright */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '0.25rem 0.75rem',
+            fontSize: '0.75rem',
+            color: 'var(--color-text-secondary)',
+            opacity: 0.7,
+            marginTop: '0.5rem',
+          }}
+        >
+          <span>{t.footer.copyright}</span>
+          <span>{t.footer.built_with}</span>
+        </div>
+      </AnimateOnScroll>
+    </footer>
+  );
 };
 
 export default FooterSection;

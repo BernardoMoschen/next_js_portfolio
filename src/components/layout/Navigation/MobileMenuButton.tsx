@@ -1,11 +1,4 @@
-import React from 'react';
-import {
-    Box,
-    Divider,
-    IconButton,
-    useTheme,
-} from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
 import { ThemeToggle } from '../../theme';
 
 interface MobileMenuButtonProps {
@@ -13,31 +6,46 @@ interface MobileMenuButtonProps {
 }
 
 const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ onClick }) => {
-    const theme = useTheme();
+    const [hovered, setHovered] = useState(false);
 
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <ThemeToggle />
-            <IconButton
-                color="inherit"
+            <button
                 aria-label="open drawer"
-                edge="start"
                 onClick={onClick}
-                sx={{
-                    color: 'text.primary',
-                    border: `1px solid ${theme.palette.primary.main}40`,
-                    borderRadius: 2,
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                style={{
+                    background: hovered ? 'var(--color-primary)' : 'transparent',
+                    color: hovered ? '#fff' : 'var(--color-text)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 8,
+                    padding: 8,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     transition: 'all 0.3s ease',
-                    '&:hover': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        transform: 'rotate(90deg)',
-                    },
+                    transform: hovered ? 'rotate(90deg)' : 'none',
                 }}
             >
-                <MenuIcon />
-            </IconButton>
-        </Box>
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                >
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+            </button>
+        </div>
     );
 };
 

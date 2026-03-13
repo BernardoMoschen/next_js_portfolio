@@ -2,12 +2,15 @@ import { defineConfig } from 'astro/config';
 
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
 
-const siteUrl = 'https://bernardo-moschen.vercel.app/';
-const siteDomain = 'vercel.app';
+const siteUrl = 'https://bernardomoschen.dev';
+const siteDomain = 'bernardomoschen.dev';
 
 export default defineConfig({
   site: siteUrl,
+  output: 'server', // Use server mode for Vercel deployment
+  adapter: vercel(), // Use Vercel adapter for deployment
   integrations: [
     react(),
     sitemap({
@@ -20,15 +23,10 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   vite: {
-    optimizeDeps: {
-      include: ['@mui/material', '@mui/icons-material']
-    },
     build: {
       rollupOptions: {
         output: {
           manualChunks: {
-            'mui-core': ['@mui/material'],
-            'mui-icons': ['@mui/icons-material'],
             'react-vendor': ['react', 'react-dom']
           }
         }

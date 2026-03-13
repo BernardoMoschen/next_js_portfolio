@@ -1,0 +1,544 @@
+import React, { useRef, useMemo, useEffect, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import * as THREE from 'three';
+import { scrollState, mouseState } from './scrollState';
+import CinematicCamera from './CinematicCamera';
+import ParticleChoreo from './ParticleChoreo';
+import { lerp } from './mathUtils';
+
+// ─── Utilities ──────────────────────────────────────────────────
+function latLngToVector3(lat: number, lng: number, r: number): THREE.Vector3 {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+    return new THREE.Vector3(
+        -(r * Math.sin(phi) * Math.cos(theta)),
+        r * Math.cos(phi),
+        r * Math.sin(phi) * Math.sin(theta),
+    );
+}
+
+function createArc(a: THREE.Vector3, b: THREE.Vector3, alt: number) {
+    const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+    mid.normalize().multiplyScalar(a.length() + alt);
+    const cA = new THREE.Vector3().lerpVectors(a, mid, 0.5);
+    cA.normalize().multiplyScalar(a.length() + alt * 0.8);
+    const cB = new THREE.Vector3().lerpVectors(mid, b, 0.5);
+    cB.normalize().multiplyScalar(a.length() + alt * 0.8);
+    return new THREE.CubicBezierCurve3(a, cA, cB, b);
+}
+
+// ─── Constants ──────────────────────────────────────────────────
+const PRIMARY = '#7fb069';
+const SECONDARY = '#ff8a50';
+const GLOBE_R = 2.0;
+
+const locations = [
+    { lat: -30.03, lng: -51.23, home: true },
+    { lat: 45.50, lng: -73.57, home: false },
+    { lat: -10.91, lng: -37.07, home: false },
+];
+
+// ─── Input Tracking ─────────────────────────────────────────────
+const InputTracker: React.FC = () => {
+    useEffect(() => {
+        const onScroll = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            scrollState.target = max > 0 ? window.scrollY / max : 0;
+        };
+        const onMouse = (e: MouseEvent) => {
+            mouseState.targetX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseState.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('mousemove', onMouse, { passive: true });
+        onScroll();
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('mousemove', onMouse);
+        };
+    }, []);
+
+    useFrame(() => {
+        scrollState.progress = lerp(scrollState.progress, scrollState.target, 0.04);
+        mouseState.x = lerp(mouseState.x, mouseState.targetX, 0.05);
+        mouseState.y = lerp(mouseState.y, mouseState.targetY, 0.05);
+    });
+
+    return null;
+};
+
+// ─── Globe Wireframe ────────────────────────────────────────────
+const GlobeWireframe: React.FC = () => {
+    const ref = useRef<THREE.Mesh>(null);
+    const { size } = useThree();
+    const segments = size.width < 768 ? 16 : 32;
+    useFrame(() => {
+        if (!ref.current) return;
+        const fade = Math.max(0, 1 - scrollState.progress / 0.15);
+        (ref.current.material as THREE.MeshBasicMaterial).opacity = 0.04 * fade;
+        ref.current.visible = fade > 0.01;
+    });
+    return (
+        <mesh ref={ref}>
+            <sphereGeometry args={[GLOBE_R - 0.01, segments, segments]} />
+            <meshBasicMaterial color={PRIMARY} wireframe transparent opacity={0.04} />
+        </mesh>
+    );
+};
+
+// ─── Globe Atmosphere ───────────────────────────────────────────
+const GlobeAtmosphere: React.FC = () => {
+    const ref = useRef<THREE.Mesh>(null);
+    const { size } = useThree();
+    const segments = size.width < 768 ? 16 : 32;
+    useFrame(({ clock }) => {
+        if (!ref.current) return;
+        const fade = Math.max(0, 1 - scrollState.progress / 0.15);
+        ref.current.visible = fade > 0.01;
+        if (!ref.current.visible) return;
+        (ref.current.material as THREE.MeshBasicMaterial).opacity =
+            (0.04 + Math.sin(clock.getElapsedTime() * 0.4) * 0.015) * fade;
+    });
+    return (
+        <mesh ref={ref}>
+            <sphereGeometry args={[GLOBE_R + 0.15, segments, segments]} />
+            <meshBasicMaterial color={PRIMARY} transparent opacity={0.04} side={THREE.BackSide} />
+        </mesh>
+    );
+};
+
+// ─── Traveling Light ────────────────────────────────────────────
+const TravelingLight: React.FC<{ arc: THREE.CubicBezierCurve3; color: string; delay: number }> = ({
+    arc, color, delay,
+}) => {
+    const dotRef = useRef<THREE.Mesh>(null);
+    const glowRef = useRef<THREE.Mesh>(null);
+    const t = useRef(-delay);
+
+    useFrame((_, delta) => {
+        t.current += delta * 0.2;
+        const prog = t.current % 3;
+        const visible = prog >= 0 && prog <= 1 && scrollState.progress < 0.2;
+        if (dotRef.current) {
+            dotRef.current.visible = visible;
+            if (visible) dotRef.current.position.copy(arc.getPoint(prog));
+        }
+        if (glowRef.current) {
+            glowRef.current.visible = visible;
+            if (visible) {
+                glowRef.current.position.copy(arc.getPoint(prog));
+                glowRef.current.scale.setScalar(1 + Math.sin(t.current * 8) * 0.3);
+            }
+        }
+    });
+
+    return (
+        <>
+            <mesh ref={dotRef}>
+                <sphereGeometry args={[0.04, 6, 6]} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2} />
+            </mesh>
+            <mesh ref={glowRef}>
+                <sphereGeometry args={[0.1, 6, 6]} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} transparent opacity={0.15} />
+            </mesh>
+        </>
+    );
+};
+
+// ─── Connection Arcs ────────────────────────────────────────────
+const Arcs: React.FC = () => {
+    const groupRef = useRef<THREE.Group>(null);
+    // Memoize arc data AND geometries
+    const arcData = useMemo(() => {
+        const home = latLngToVector3(locations[0].lat, locations[0].lng, GLOBE_R);
+        return [
+            { arc: createArc(home, latLngToVector3(locations[1].lat, locations[1].lng, GLOBE_R), 0.7), color: SECONDARY },
+            { arc: createArc(home, latLngToVector3(locations[2].lat, locations[2].lng, GLOBE_R), 0.35), color: PRIMARY },
+        ].map(d => ({
+            ...d,
+            geometry: new THREE.BufferGeometry().setFromPoints(d.arc.getPoints(60)),
+        }));
+    }, []);
+
+    useFrame(() => {
+        if (!groupRef.current) return;
+        const fade = Math.max(0, 1 - scrollState.progress / 0.18);
+        groupRef.current.visible = fade > 0.01;
+    });
+
+    return (
+        <group ref={groupRef}>
+            {arcData.map((d, i) => (
+                <group key={i}>
+                    <line geometry={d.geometry}>
+                        <lineBasicMaterial color={d.color} transparent opacity={0.45} />
+                    </line>
+                    <TravelingLight arc={d.arc} color={d.color} delay={i * 1.5} />
+                </group>
+            ))}
+        </group>
+    );
+};
+
+// ─── Pulsing Markers ────────────────────────────────────────────
+const PulsingMarker: React.FC<{ position: THREE.Vector3; color: string; size: number }> = ({
+    position, color, size,
+}) => {
+    const ref = useRef<THREE.Mesh>(null);
+    useFrame(({ clock }) => {
+        if (ref.current) {
+            ref.current.scale.setScalar(1 + Math.sin(clock.getElapsedTime() * 2.5) * 0.3);
+        }
+    });
+    return (
+        <group position={position}>
+            <mesh>
+                <sphereGeometry args={[0.04 * size, 8, 8]} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2} />
+            </mesh>
+            <mesh ref={ref}>
+                <ringGeometry args={[0.06 * size, 0.09 * size, 16]} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} transparent opacity={0.3} side={THREE.DoubleSide} />
+            </mesh>
+        </group>
+    );
+};
+
+const Markers: React.FC = () => {
+    const groupRef = useRef<THREE.Group>(null);
+    const data = useMemo(() =>
+        locations.map((l) => ({
+            pos: latLngToVector3(l.lat, l.lng, GLOBE_R),
+            color: l.home ? SECONDARY : PRIMARY,
+            size: l.home ? 1.5 : 1,
+        })), []);
+
+    useFrame(() => {
+        if (!groupRef.current) return;
+        const fade = Math.max(0, 1 - scrollState.progress / 0.15);
+        groupRef.current.visible = fade > 0.01;
+    });
+
+    return (
+        <group ref={groupRef}>
+            {data.map((m, i) => (
+                <PulsingMarker key={i} position={m.pos} color={m.color} size={m.size} />
+            ))}
+        </group>
+    );
+};
+
+// ─── Globe Group ────────────────────────────────────────────────
+const Globe: React.FC = () => {
+    const innerRef = useRef<THREE.Group>(null);
+
+    useFrame((_, delta) => {
+        if (!innerRef.current) return;
+        const rotationFade = Math.max(0, 1 - scrollState.progress / 0.2);
+        if (rotationFade > 0.01) {
+            innerRef.current.rotation.y += delta * 0.05 * rotationFade;
+        }
+    });
+
+    return (
+        <group ref={innerRef} rotation={[0.15, 1.0, 0.05]}>
+            <GlobeWireframe />
+            <GlobeAtmosphere />
+            <Arcs />
+            <Markers />
+        </group>
+    );
+};
+
+// ─── Floating Geometric Shapes (reduced from 10 to 6) ──────────
+interface ShapeData {
+    type: 'torus' | 'icosahedron' | 'octahedron' | 'torusKnot' | 'dodecahedron';
+    position: [number, number, number];
+    rotation: [number, number, number];
+    scale: number;
+    speed: number;
+    color: string;
+    appearAt: number;
+}
+
+const shapes: ShapeData[] = [
+    { type: 'torusKnot', position: [-3, 1.5, -2], rotation: [0.5, 0, 0], scale: 0.4, speed: 0.3, color: PRIMARY, appearAt: 0.08 },
+    { type: 'icosahedron', position: [3.5, -1, -1], rotation: [0, 0.5, 0], scale: 0.5, speed: 0.2, color: SECONDARY, appearAt: 0.12 },
+    { type: 'octahedron', position: [-2.5, -2, 1], rotation: [0.3, 0, 0.3], scale: 0.45, speed: 0.25, color: PRIMARY, appearAt: 0.18 },
+    { type: 'torus', position: [2, 2, -3], rotation: [0, 0, 0.5], scale: 0.35, speed: 0.35, color: SECONDARY, appearAt: 0.15 },
+    { type: 'dodecahedron', position: [-1, 3, -2], rotation: [0.2, 0.3, 0], scale: 0.3, speed: 0.28, color: PRIMARY, appearAt: 0.22 },
+    { type: 'icosahedron', position: [-4, -1, -3], rotation: [0.4, 0, 0.2], scale: 0.35, speed: 0.22, color: SECONDARY, appearAt: 0.30 },
+];
+
+const FloatingShape: React.FC<{ data: ShapeData }> = ({ data }) => {
+    const ref = useRef<THREE.Mesh>(null);
+    const basePos = useMemo(() => new THREE.Vector3(...data.position), [data.position]);
+    const prevProgress = useRef(0);
+    const smoothVelocity = useRef(0);
+
+    useFrame(({ clock }) => {
+        if (!ref.current) return;
+        const p = scrollState.progress;
+        const t = clock.getElapsedTime();
+
+        // Track scroll velocity for movement amplitude
+        const rawVelocity = Math.abs(p - prevProgress.current);
+        prevProgress.current = p;
+        smoothVelocity.current = lerp(smoothVelocity.current, rawVelocity, 0.1);
+        const velocityScale = Math.min(smoothVelocity.current * 150, 1);
+        const movementMultiplier = lerp(1.0, 2.0, velocityScale);
+
+        const fadeIn = Math.max(0, Math.min(1, (p - data.appearAt) / 0.08));
+        const fadeOut = p > 0.9 ? Math.max(0, 1 - (p - 0.9) / 0.1) : 1;
+        const opacity = fadeIn * fadeOut;
+
+        ref.current.visible = opacity > 0.01;
+        if (!ref.current.visible) return;
+
+        const mat = ref.current.material as THREE.MeshStandardMaterial;
+        mat.opacity = opacity * 0.12;
+        mat.emissiveIntensity = opacity * 0.3;
+
+        ref.current.position.x = basePos.x + Math.sin(t * data.speed + data.position[0]) * 0.3 * movementMultiplier + mouseState.x * 0.2;
+        ref.current.position.y = basePos.y + Math.sin(t * data.speed * 0.7 + data.position[1]) * 0.4 * movementMultiplier + mouseState.y * 0.15;
+        ref.current.position.z = basePos.z + Math.cos(t * data.speed * 0.5) * 0.2 * movementMultiplier;
+
+        ref.current.rotation.x = data.rotation[0] + t * data.speed * 0.5;
+        ref.current.rotation.y = data.rotation[1] + t * data.speed * 0.3;
+        ref.current.rotation.z = data.rotation[2] + t * data.speed * 0.2;
+    });
+
+    const geometry = useMemo(() => {
+        switch (data.type) {
+            case 'torus': return <torusGeometry args={[1, 0.3, 12, 24]} />;
+            case 'icosahedron': return <icosahedronGeometry args={[1, 0]} />;
+            case 'octahedron': return <octahedronGeometry args={[1, 0]} />;
+            case 'torusKnot': return <torusKnotGeometry args={[0.8, 0.25, 48, 6]} />;
+            case 'dodecahedron': return <dodecahedronGeometry args={[1, 0]} />;
+        }
+    }, [data.type]);
+
+    return (
+        <mesh ref={ref} scale={data.scale}>
+            {geometry}
+            <meshStandardMaterial color={data.color} emissive={data.color} emissiveIntensity={0.3} wireframe transparent opacity={0.12} />
+        </mesh>
+    );
+};
+
+const FloatingShapes: React.FC = () => (
+    <group>
+        {shapes.map((s, i) => <FloatingShape key={i} data={s} />)}
+    </group>
+);
+
+// ─── Grid Plane ─────────────────────────────────────────────────
+const GridPlane: React.FC = () => {
+    const ref = useRef<THREE.GridHelper>(null);
+
+    useFrame(() => {
+        if (!ref.current) return;
+        const p = scrollState.progress;
+        const fadeIn = Math.max(0, Math.min(1, (p - 0.15) / 0.08));
+        const fadeOut = p > 0.85 ? Math.max(0, 1 - (p - 0.85) / 0.1) : 1;
+        const opacity = fadeIn * fadeOut;
+
+        ref.current.visible = opacity > 0.01;
+        if (!ref.current.visible) return;
+        (ref.current.material as THREE.Material).opacity = opacity * 0.06;
+        ref.current.position.y = -3 + Math.sin(p * Math.PI) * 0.5;
+    });
+
+    return (
+        <gridHelper
+            ref={ref}
+            args={[20, 20, PRIMARY, PRIMARY]}
+            position={[0, -3, 0]}
+            material-transparent
+            material-opacity={0.06}
+        />
+    );
+};
+
+// ─── Energy Spiral ──────────────────────────────────────────────
+const EnergyLines: React.FC = () => {
+    const ref = useRef<THREE.Points>(null);
+
+    const geometry = useMemo(() => {
+        const count = 60;
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 4;
+            const radius = 2 + Math.sin(i * 0.3) * 2;
+            positions[i * 3] = Math.cos(angle) * radius;
+            positions[i * 3 + 1] = (i / count - 0.5) * 6;
+            positions[i * 3 + 2] = Math.sin(angle) * radius;
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        return geo;
+    }, []);
+
+    useFrame(({ clock }) => {
+        if (!ref.current) return;
+        const p = scrollState.progress;
+        const t = clock.getElapsedTime();
+
+        const fadeIn = Math.max(0, Math.min(1, (p - 0.1) / 0.08));
+        const fadeOut = p > 0.88 ? Math.max(0, 1 - (p - 0.88) / 0.1) : 1;
+        const opacity = fadeIn * fadeOut;
+
+        ref.current.visible = opacity > 0.01;
+        if (!ref.current.visible) return;
+
+        (ref.current.material as THREE.PointsMaterial).opacity = opacity * 0.3;
+
+        const positions = ref.current.geometry.attributes.position.array as Float32Array;
+        const count = positions.length / 3;
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 4 + t * 0.2;
+            const radius = 2 + Math.sin(i * 0.3 + t * 0.5) * 2;
+            positions[i * 3] = Math.cos(angle) * radius;
+            positions[i * 3 + 2] = Math.sin(angle) * radius;
+        }
+        ref.current.geometry.attributes.position.needsUpdate = true;
+    });
+
+    return (
+        <points ref={ref} geometry={geometry}>
+            <pointsMaterial color={SECONDARY} size={0.03} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
+        </points>
+    );
+};
+
+// ─── Post-Processing ────────────────────────────────────────────
+const PostProcessing: React.FC = () => {
+    const { size } = useThree();
+    const isMobile = size.width < 768;
+
+    // Skip postprocessing entirely on mobile for performance
+    if (isMobile) return null;
+
+    return (
+        <EffectComposer>
+            <Bloom
+                luminanceThreshold={0.3}
+                luminanceSmoothing={0.9}
+                intensity={0.5}
+                mipmapBlur
+            />
+            <Vignette eskil={false} offset={0.1} darkness={0.4} />
+        </EffectComposer>
+    );
+};
+
+// ─── Error Boundary ─────────────────────────────────────────────
+class Scene3DErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean }
+> {
+    state = { hasError: false };
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+    render() {
+        if (this.state.hasError) return null;
+        return this.props.children;
+    }
+}
+
+// ─── Main Scene ─────────────────────────────────────────────────
+const SceneContent: React.FC = () => {
+    const { size } = useThree();
+    const isMobile = size.width < 768;
+
+    return (
+        <Scene3DErrorBoundary>
+            <InputTracker />
+            <CinematicCamera />
+            <ambientLight intensity={0.3} />
+            <pointLight position={[5, 5, 5]} intensity={0.2} color={PRIMARY} />
+            <pointLight position={[-5, -3, 3]} intensity={0.15} color={SECONDARY} />
+            <Globe />
+            <ParticleChoreo />
+            {!isMobile && <FloatingShapes />}
+            <GridPlane />
+            {!isMobile && <EnergyLines />}
+            <PostProcessing />
+        </Scene3DErrorBoundary>
+    );
+};
+
+// ─── Outer Error Boundary (catches Canvas/WebGL init failures) ──
+class WebGLErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean }
+> {
+    state = { hasError: false };
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+    componentDidCatch(error: Error) {
+        console.warn('[Scene3D] WebGL initialization failed:', error.message);
+    }
+    render() {
+        if (this.state.hasError) return null;
+        return this.props.children;
+    }
+}
+
+// ─── Exported Component ─────────────────────────────────────────
+const Scene3DInner: React.FC = () => {
+    const [enabled, setEnabled] = useState(false);
+
+    useEffect(() => {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) return;
+
+        try {
+            const canvas = document.createElement('canvas');
+            const hasGL = !!(
+                window.WebGLRenderingContext &&
+                (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+            );
+            if (hasGL) setEnabled(true);
+        } catch {
+            // No WebGL
+        }
+    }, []);
+
+    if (!enabled) return null;
+
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                zIndex: 1,
+                pointerEvents: 'none',
+            }}
+        >
+            <Canvas
+                camera={{ position: [0, 0, 6], fov: 50 }}
+                style={{ background: 'transparent' }}
+                gl={{ antialias: typeof window !== 'undefined' ? window.devicePixelRatio <= 1 : true, powerPreference: 'high-performance', alpha: true }}
+                dpr={[1, 2]}
+            >
+                <SceneContent />
+            </Canvas>
+        </div>
+    );
+};
+
+const Scene3D: React.FC = () => (
+    <WebGLErrorBoundary>
+        <Scene3DInner />
+    </WebGLErrorBoundary>
+);
+
+export default Scene3D;

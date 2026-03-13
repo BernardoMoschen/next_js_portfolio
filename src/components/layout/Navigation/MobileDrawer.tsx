@@ -1,21 +1,6 @@
-import React from 'react';
-import {
-    Box,
-    Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    Typography,
-    IconButton,
-    Chip,
-    useTheme,
-} from '@mui/material';
-import {
-    Close as CloseIcon,
-    Code,
-    Terminal,
-} from '@mui/icons-material';
-import { ThemeToggle } from '../../theme';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { SoundToggle } from '../../audio';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 interface MenuItem {
     label: string;
@@ -37,170 +22,292 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
     activeSection,
     onMenuClick,
 }) => {
-    const theme = useTheme();
+    const drawerRef = useRef<HTMLDivElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-    const drawer = (
-        <Box
-            sx={{
-                width: 280,
-                backgroundColor: 'background.paper',
-                height: '100%',
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-        >
-            {/* Tech-style background pattern */}
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    opacity: 0.15,
-                    backgroundImage: theme.palette.mode === 'dark'
-                        ? `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.1) 1px, transparent 0)`
-                        : `radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.08) 1px, transparent 0)`,
-                    backgroundSize: '20px 20px',
+    // Prevent body scroll when drawer is open
+    useEffect(() => {
+        if (open) {
+            document.body.style.overflow = 'hidden';
+            // Focus the close button when drawer opens
+            setTimeout(() => closeButtonRef.current?.focus(), 100);
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [open]);
+
+    // Escape key closes drawer
+    useEffect(() => {
+        if (!open) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+                return;
+            }
+            // Focus trap
+            if (e.key === 'Tab' && drawerRef.current) {
+                const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [open, onClose]);
+
+    return (
+        <>
+            {/* Backdrop overlay */}
+            <div
+                onClick={onClose}
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    zIndex: 1200,
+                    opacity: open ? 1 : 0,
+                    pointerEvents: open ? 'auto' : 'none',
+                    transition: 'opacity 0.3s ease',
                 }}
             />
 
-            {/* Header */}
-            <Box
-                sx={{
+            {/* Drawer panel */}
+            <div
+                ref={drawerRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Navigation menu"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: 280,
+                    backgroundColor: 'var(--color-bg-primary)',
+                    zIndex: 1300,
+                    transform: open ? 'translateX(0)' : 'translateX(100%)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    borderLeft: '2px solid var(--color-border)',
+                    boxShadow: open ? '0 0 50px var(--color-bg-glass)' : 'none',
+                    overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    p: 3,
-                    borderBottom: `2px solid ${theme.palette.primary.main}20`,
-                    background: theme.palette.mode === 'dark'
-                        ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}05 100%)`
-                        : `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}03 100%)`,
-                    position: 'relative',
-                    zIndex: 1,
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Terminal sx={{ color: 'primary.main', fontSize: 20 }} />
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                fontWeight: 700,
-                                color: 'primary.main',
-                                fontFamily: 'monospace',
-                            }}
-                        >
-                            bernardo.moschen
-                        </Typography>
-                    </Box>
-                    <IconButton
-                        onClick={onClose}
-                        sx={{
-                            color: 'text.primary',
-                            '&:hover': {
-                                backgroundColor: 'primary.main',
-                                color: 'white',
-                            },
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
-
-                <Chip
-                    icon={<Code />}
-                    label="Currently coding"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                        alignSelf: 'flex-start',
-                        borderColor: 'secondary.main',
-                        color: 'secondary.main',
-                        '& .MuiChip-icon': {
-                            color: 'secondary.main',
-                        },
+                {/* Dot pattern background */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        opacity: 0.15,
+                        backgroundImage:
+                            'radial-gradient(circle at 2px 2px, var(--color-text-secondary) 1px, transparent 0)',
+                        backgroundSize: '20px 20px',
+                        pointerEvents: 'none',
                     }}
                 />
-            </Box>
 
-            {/* Navigation Menu */}
-            <List sx={{ p: 2, position: 'relative', zIndex: 1 }}>
-                {menuItems.map((item, index) => (
-                    <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
-                        <ListItemButton
-                            onClick={() => onMenuClick(item.href)}
-                            sx={{
-                                borderRadius: 2,
-                                p: 2,
-                                transition: 'all 0.3s ease',
-                                border: `1px solid transparent`,
-                                '&:hover': {
-                                    backgroundColor: `${theme.palette.primary.main}10`,
-                                    borderColor: theme.palette.primary.main,
-                                    transform: 'translateX(8px)',
-                                },
-                                backgroundColor: activeSection === item.href.replace('#', '')
-                                    ? `${theme.palette.primary.main}15`
-                                    : 'transparent',
-                                borderColor: activeSection === item.href.replace('#', '')
-                                    ? theme.palette.primary.main
-                                    : 'transparent',
+                {/* Header */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: 24,
+                        borderBottom: '2px solid var(--color-border)',
+                        position: 'relative',
+                        zIndex: 1,
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 16,
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {/* Terminal icon */}
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="var(--color-primary)"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                            <span
+                                className="mono"
+                                style={{
+                                    fontWeight: 700,
+                                    color: 'var(--color-primary)',
+                                    fontFamily: '"JetBrains Mono", monospace',
+                                    fontSize: '1rem',
+                                }}
+                            >
+                                bernardo.moschen
+                            </span>
+                        </div>
+
+                        {/* Close button */}
+                        <button
+                            ref={closeButtonRef}
+                            onClick={onClose}
+                            aria-label="Close navigation menu"
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--color-text)',
+                                cursor: 'pointer',
+                                padding: 8,
+                                borderRadius: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease',
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography
-                                        sx={{
-                                            color: activeSection === item.href.replace('#', '')
-                                                ? 'primary.main'
-                                                : 'text.primary',
-                                            fontWeight: 600,
-                                            fontFamily: 'monospace',
-                                            fontSize: '0.9rem',
-                                        }}
-                                    >
-                                        {item.label}
-                                    </Typography>
-                                </Box>
-                                <Typography
-                                    variant="caption"
-                                    sx={{
-                                        color: 'secondary.main',
-                                        fontFamily: 'monospace',
-                                        opacity: activeSection === item.href.replace('#', '') ? 1 : 0.5,
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* Status chip */}
+                    <span
+                        style={{
+                            alignSelf: 'flex-start',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '4px 12px',
+                            border: '1px solid var(--color-secondary)',
+                            borderRadius: 16,
+                            color: 'var(--color-secondary)',
+                            fontSize: '0.75rem',
+                            fontFamily: '"JetBrains Mono", monospace',
+                        }}
+                    >
+                        {/* Code icon */}
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                        Currently coding
+                    </span>
+                </div>
+
+                {/* Navigation Menu */}
+                <nav style={{ padding: 16, position: 'relative', zIndex: 1 }}>
+                    {menuItems.map((item, index) => {
+                        const isActive = activeSection === item.href.replace('#', '');
+
+                        return (
+                            <button
+                                key={item.label}
+                                onClick={() => onMenuClick(item.href)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                    padding: 16,
+                                    marginBottom: 8,
+                                    borderRadius: 8,
+                                    border: `1px solid ${isActive ? 'var(--color-primary)' : 'transparent'}`,
+                                    background: isActive ? 'var(--color-bg-glass)' : 'transparent',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    textAlign: 'left',
+                                }}
+                            >
+                                <span
+                                    className="mono"
+                                    style={{
+                                        flex: 1,
+                                        color: isActive
+                                            ? 'var(--color-primary)'
+                                            : 'var(--color-text)',
+                                        fontWeight: 600,
+                                        fontFamily: '"JetBrains Mono", monospace',
+                                        fontSize: '0.9rem',
+                                    }}
+                                >
+                                    {item.label}
+                                </span>
+                                <span
+                                    style={{
+                                        color: 'var(--color-secondary)',
+                                        fontFamily: '"JetBrains Mono", monospace',
+                                        fontSize: '0.75rem',
+                                        opacity: isActive ? 1 : 0.5,
                                     }}
                                 >
                                     [{index.toString().padStart(2, '0')}]
-                                </Typography>
-                            </Box>
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-            </List>
-        </Box>
-    );
-
-    return (
-        <Drawer
-            anchor="right"
-            open={open}
-            onClose={onClose}
-            ModalProps={{
-                keepMounted: true,
-            }}
-            sx={{
-                '& .MuiDrawer-paper': {
-                    backgroundColor: 'background.paper',
-                    backgroundImage: 'none',
-                    borderLeft: `2px solid ${theme.palette.primary.main}30`,
-                    boxShadow: theme.palette.mode === 'dark'
-                        ? `0 0 50px ${theme.palette.primary.main}30`
-                        : `0 0 50px ${theme.palette.primary.main}20`,
-                },
-            }}
-        >
-            {drawer}
-        </Drawer>
+                                </span>
+                            </button>
+                        );
+                    })}
+                    <div style={{
+                        marginTop: 16,
+                        paddingTop: 16,
+                        borderTop: '1px solid var(--color-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        paddingLeft: 16,
+                    }}>
+                        <SoundToggle />
+                        <span style={{
+                            fontFamily: '"JetBrains Mono", monospace',
+                            fontSize: '0.75rem',
+                            color: 'var(--color-text-secondary)',
+                        }}>
+                            Sound FX
+                        </span>
+                        <div style={{ marginLeft: 'auto' }}>
+                            <LanguageSwitcher />
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </>
     );
 };
 

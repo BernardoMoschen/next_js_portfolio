@@ -17,7 +17,7 @@ export const scrollToSection = (sectionId: string) => {
 export const PERSONAL_INFO = {
     name: 'Bernardo Moschen',
     title: 'Full Stack Engineer',
-    description: `Since 2019 bringing life to scalable, maintainable solutions that deliver measurable business impact. Mostly advocating in the TypeScript multiverse: React and Node.js are my go-to weapons of choice.`,
+    description: `I've shipped products across 3 countries — from Brazilian edtech serving thousands of students to Canadian mining infrastructure processing real-time sensor data. I build the systems that make businesses actually work, mostly with TypeScript, React, and Node.js.`,
     profileImage: '/profile-photo.jpeg',
     initials: 'BM',
     skills: [
