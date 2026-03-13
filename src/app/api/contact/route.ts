@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import siteConfig from '../../../config/site';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const rateLimit = new Map<string, number[]>();
 const RATE_LIMIT_WINDOW = 60_000;
 const RATE_LIMIT_MAX = 3;
@@ -29,6 +27,7 @@ function escapeHtml(str: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
     if (isRateLimited(ip)) {
       return NextResponse.json(
