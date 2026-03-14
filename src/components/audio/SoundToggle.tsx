@@ -29,6 +29,7 @@ const SoundToggle: React.FC<SoundToggleProps> = ({ size = 20 }) => {
                     gain.connect(ctx.destination);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.04);
+                    osc.onended = () => { ctx.close(); };
                 } catch {}
             }, 0);
         } else {

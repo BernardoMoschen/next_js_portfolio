@@ -15,6 +15,7 @@ export const AmbientAudio: React.FC = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const fadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const mutedRef = useRef(muted);
+    const retryHandlerRef = useRef<(() => void) | null>(null);
     mutedRef.current = muted;
 
     const clearFade = () => {
@@ -64,13 +65,19 @@ export const AmbientAudio: React.FC = () => {
             .then(() => fadeIn())
             .catch(() => {
                 // Autoplay blocked — retry on first interaction
+                if (retryHandlerRef.current) {
+                    document.removeEventListener('click', retryHandlerRef.current);
+                    document.removeEventListener('keydown', retryHandlerRef.current);
+                }
                 const retry = () => {
                     if (!mutedRef.current) {
                         audio.play().then(() => fadeIn()).catch(() => {});
                     }
                     document.removeEventListener('click', retry);
                     document.removeEventListener('keydown', retry);
+                    retryHandlerRef.current = null;
                 };
+                retryHandlerRef.current = retry;
                 document.addEventListener('click', retry);
                 document.addEventListener('keydown', retry);
             });
@@ -109,6 +116,11 @@ export const AmbientAudio: React.FC = () => {
 
     // Cleanup
     useEffect(() => () => {
+        if (retryHandlerRef.current) {
+            document.removeEventListener('click', retryHandlerRef.current);
+            document.removeEventListener('keydown', retryHandlerRef.current);
+            retryHandlerRef.current = null;
+        }
         clearFade();
         if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null; }
     // eslint-disable-next-line react-hooks/exhaustive-deps

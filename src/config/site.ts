@@ -20,14 +20,4 @@ export const siteConfig = {
   securityExpiry: '2025-12-31T23:59:59.000Z',
 } as const;
 
-export const getSiteUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return siteConfig.url;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-};
-
 export default siteConfig;

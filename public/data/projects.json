@@ -27,7 +27,7 @@
       "metrics": [
         { "label": "Lighthouse", "value": "95+" },
         { "label": "3D Bundle", "value": "244KB gz" },
-        { "label": "Build", "value": "Astro SSG" }
+        { "label": "Build", "value": "Next.js (SSR + SSG)" }
       ]
     }
   },

@@ -26,7 +26,10 @@ const CustomCursor: React.FC = () => {
         };
 
         const onMouseLeave = (e: Event) => {
-            if (!(e.target instanceof Element) || !e.target.closest('a, button, [role="button"], input, textarea, .interactive')) {
+            if (!(e instanceof MouseEvent)) return;
+            const isInteractive = (el: EventTarget | null): boolean =>
+                el instanceof Element && !!el.closest('a, button, [role="button"], input, textarea, .interactive');
+            if (isInteractive(e.target) && !isInteractive(e.relatedTarget)) {
                 document.body.classList.remove('cursor-hover');
             }
         };
