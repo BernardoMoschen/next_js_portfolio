@@ -24,34 +24,44 @@ const FloatingLikeButton: React.FC = () => {
       aria-pressed={liked}
       style={{
         position: 'fixed',
-        right: '1.25rem',
-        top: '50%',
-        transform: `translateY(-50%) scale(${pulse ? 1.12 : 1})`,
+        right: '1.5rem',
+        bottom: '2rem',
+        transform: `scale(${pulse ? 1.15 : 1})`,
         zIndex: 90,
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.3rem',
-        padding: '0.6rem 0.5rem',
-        background: 'var(--color-bg-glass)',
+        gap: '0.5rem',
+        padding: '0.65rem 1rem',
+        background: liked
+          ? 'var(--color-primary)'
+          : 'var(--color-bg-glass)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border: `1px solid ${liked ? 'var(--color-primary)' : 'var(--color-border, rgba(255,255,255,0.1))'}`,
+        border: `1px solid ${liked ? 'var(--color-primary)' : 'var(--color-border, rgba(255,255,255,0.15))'}`,
         borderRadius: '2rem',
         cursor: liked || count === null ? 'default' : loading ? 'wait' : 'pointer',
-        color: liked ? 'var(--color-primary)' : 'var(--color-text-muted)',
-        transition: 'opacity 0.4s ease, transform 0.25s ease, border-color 0.25s ease, color 0.25s ease',
+        color: liked ? '#fff' : 'var(--color-text-muted)',
+        boxShadow: liked
+          ? '0 4px 20px color-mix(in srgb, var(--color-primary) 50%, transparent)'
+          : '0 4px 16px rgba(0,0,0,0.25)',
+        transition: 'opacity 0.4s ease, transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, color 0.25s ease',
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? 'auto' : 'none',
         userSelect: 'none',
       }}
     >
-      <span style={{ fontSize: '1.1rem', lineHeight: 1, transition: 'transform 0.25s ease', display: 'block', transform: pulse ? 'scale(1.35)' : 'scale(1)' }}>
+      <span style={{
+        fontSize: '1.1rem',
+        lineHeight: 1,
+        display: 'block',
+        transition: 'transform 0.25s ease',
+        transform: pulse ? 'scale(1.4)' : 'scale(1)',
+      }}>
         {liked ? '♥' : '♡'}
       </span>
       {count !== null && (
-        <span className="mono" style={{ fontSize: '0.65rem', lineHeight: 1 }}>
-          {count}
+        <span className="mono" style={{ fontSize: '0.75rem', lineHeight: 1, fontWeight: 600 }}>
+          {liked ? `${count} liked` : count > 0 ? `${count}` : 'Like'}
         </span>
       )}
     </button>
