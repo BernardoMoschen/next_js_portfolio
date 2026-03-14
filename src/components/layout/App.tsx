@@ -19,7 +19,7 @@ import { ContactSection } from '../sections/Contact';
 import { FooterSection } from '../sections/Footer';
 import CertificationsSection from '../sections/Certifications/CertificationsSection';
 import { LikesProvider } from '../../context/LikesContext';
-import FloatingLikeButton from '../ui/FloatingLikeButton';
+import BottomRightHUD from '../ui/BottomRightHUD';
 
 const Scene3D = lazy(() => import('../3d/Scene3D'));
 
@@ -108,7 +108,7 @@ const App: React.FC = () => {
             <SoundContextProvider>
                 <LikesProvider>
                     <AppInner />
-                    <FloatingLikeButton />
+                    <BottomRightHUD />
                 </LikesProvider>
             </SoundContextProvider>
             </I18nProvider>
