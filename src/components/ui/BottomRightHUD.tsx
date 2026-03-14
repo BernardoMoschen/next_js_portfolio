@@ -1,255 +1,203 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLikes } from '../../context/LikesContext';
 import { scrollToTop } from '../layout/Navigation/utils';
 
 const BottomRightHUD: React.FC = () => {
   const { count, liked, loading, pulse, handleLike } = useLikes();
-  const [showScroll, setShowScroll] = useState(false);
-  const [showLike, setShowLike] = useState(false);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [spotlight, setSpotlight] = useState({ x: 50, y: 50 });
-  const [scrollHovered, setScrollHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [scrollDepth, setScrollDepth] = useState(0);
+  const [show, setShow] = useState(false);
+  const [hover, setHover] = useState<'scroll' | 'like' | null>(null);
+  const [blink, setBlink] = useState(true);
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      setShowScroll(y > 100);
-      setShowLike(y > 300);
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollDepth(total > 0 ? Math.round((y / total) * 100) : 0);
+      setShow(y > 100);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const card = cardRef.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
-    setTilt({ x: (ny - 0.5) * -14, y: (nx - 0.5) * 14 });
-    setSpotlight({ x: nx * 100, y: ny * 100 });
+  useEffect(() => {
+    const id = setInterval(() => setBlink(b => !b), 530);
+    return () => clearInterval(id);
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    setTilt({ x: 0, y: 0 });
-    setSpotlight({ x: 50, y: 50 });
-  }, []);
-
-  const merged = showScroll && showLike;
-  const visible = showScroll || showLike;
+  const onLikeClick = useCallback(() => {
+    if (!liked && !loading && count !== null) handleLike();
+  }, [liked, loading, count, handleLike]);
 
   return (
     <>
       <style>{`
-        @keyframes hudFloat {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-7px); }
+        @keyframes accentGlow {
+          0%, 100% { box-shadow: -1px 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent), 0 16px 40px rgba(0,0,0,0.55); }
+          50%       { box-shadow: -1px 0 20px color-mix(in srgb, var(--color-secondary) 40%, transparent), 0 16px 40px rgba(0,0,0,0.55); }
         }
-        @keyframes hudGlow {
-          0%, 100% { box-shadow: 0 0 18px color-mix(in srgb, var(--color-primary) 35%, transparent), 0 16px 48px rgba(0,0,0,0.45); }
-          50%       { box-shadow: 0 0 32px color-mix(in srgb, var(--color-primary) 55%, transparent), 0 0 16px color-mix(in srgb, var(--color-secondary) 20%, transparent), 0 16px 48px rgba(0,0,0,0.45); }
-        }
-        @keyframes heartBeat {
+        @keyframes heartPop {
           0%   { transform: scale(1); }
-          25%  { transform: scale(1.5); }
-          50%  { transform: scale(1.2); }
-          75%  { transform: scale(1.45); }
+          35%  { transform: scale(1.7); }
+          65%  { transform: scale(1.25); }
           100% { transform: scale(1); }
         }
-        .hud-scroll-solo:hover {
-          transform: translateY(-4px) scale(1.1) !important;
-          box-shadow: 0 8px 28px color-mix(in srgb, var(--color-primary) 55%, transparent), 0 4px 12px rgba(0,0,0,0.3) !important;
+        @keyframes valueFlash {
+          0%   { color: var(--color-secondary); }
+          100% { color: var(--color-primary); }
         }
-        .hud-like-row:hover:not(:disabled) {
-          background: color-mix(in srgb, var(--color-primary) 10%, transparent) !important;
+        .hud-root {
+          font-family: 'JetBrains Mono', 'Fira Code', monospace;
+          font-size: 0.73rem;
+          line-height: 1;
+          position: fixed;
+          bottom: 2rem;
+          right: 1.5rem;
+          z-index: 1000;
+          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1);
         }
-        .hud-scroll-row:hover {
-          background: color-mix(in srgb, var(--color-secondary) 8%, transparent) !important;
-          color: var(--color-secondary) !important;
+        .hud-panel {
+          background: rgba(7, 7, 9, 0.93);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-left: 2.5px solid var(--color-primary);
+          border-radius: 7px;
+          overflow: hidden;
+          min-width: 210px;
+          animation: accentGlow 4s ease-in-out infinite;
         }
-        .hud-scroll-row:hover svg {
-          stroke: var(--color-secondary);
+        .hud-titlebar {
+          padding: 5px 11px;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .hud-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .hud-filename {
+          margin-left: 8px;
+          color: rgba(255,255,255,0.18);
+          font-size: 0.61rem;
+          letter-spacing: 0.04em;
+        }
+        .hud-row {
+          padding: 8px 11px;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          transition: background 0.12s ease;
+          cursor: pointer;
+          user-select: none;
+          white-space: nowrap;
+        }
+        .hud-row:hover { background: rgba(127,176,105,0.06); }
+        .hud-row.like:hover { background: rgba(255,138,80,0.06); }
+        .hud-row.liked-state { background: rgba(127,176,105,0.04); }
+        .hud-prompt { color: var(--color-secondary); font-size: 0.65rem; flex-shrink: 0; }
+        .hud-key { color: rgba(240,246,252,0.38); flex-shrink: 0; }
+        .hud-eq  { color: rgba(240,246,252,0.18); flex-shrink: 0; }
+        .hud-val { color: var(--color-primary); font-weight: 700; }
+        .hud-val-liked { animation: valueFlash 0.3s ease forwards; }
+        .hud-heart {
+          margin-left: auto;
+          font-size: 1rem;
+          flex-shrink: 0;
+          transition: color 0.25s ease, filter 0.25s ease;
+        }
+        .hud-hint {
+          padding: 4px 11px 5px;
+          border-top: 1px solid rgba(255,255,255,0.03);
+          color: rgba(255,255,255,0.16);
+          font-size: 0.6rem;
+          font-style: italic;
+          letter-spacing: 0.01em;
+        }
+        .hud-divider {
+          height: 1px;
+          background: rgba(255,255,255,0.04);
+          margin: 0 11px;
         }
       `}</style>
 
-      {/* Float wrapper — animation here so it doesn't conflict with tilt transform below */}
       <div
+        className="hud-root"
         style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '1.5rem',
-          zIndex: 1000,
-          opacity: visible ? 1 : 0,
-          pointerEvents: visible ? 'auto' : 'none',
-          transition: 'opacity 0.4s ease',
-          animation: merged ? 'hudFloat 4s ease-in-out infinite' : 'none',
+          opacity: show ? 1 : 0,
+          pointerEvents: show ? 'auto' : 'none',
+          transform: show ? 'translateY(0)' : 'translateY(12px)',
         }}
       >
-        {merged ? (
-          /* ── MERGED: gradient-border + glass card with tilt + spotlight ── */
-          <div
-            ref={cardRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              /* Gradient border via 1px padding + gradient background */
-              background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-              borderRadius: '1.15rem',
-              padding: '1px',
-              transform: `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.x !== 0 || tilt.y !== 0 ? 1.04 : 1})`,
-              transition: 'transform 0.25s ease',
-              animation: 'hudGlow 3.5s ease-in-out infinite',
-            }}
-          >
-            {/* Actual glass card */}
-            <div style={{
-              background: 'var(--color-bg-glass)',
-              backdropFilter: 'blur(18px)',
-              WebkitBackdropFilter: 'blur(18px)',
-              borderRadius: '1.05rem',
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
-              {/* Mouse-following spotlight overlay */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '1.05rem',
-                background: `radial-gradient(circle at ${spotlight.x}% ${spotlight.y}%, rgba(255,255,255,0.07), transparent 65%)`,
-                pointerEvents: 'none',
-                transition: 'background 0.1s ease',
-              }} />
+        <div className="hud-panel">
 
-              {/* Like row */}
-              <button
-                type="button"
-                className="hud-like-row"
-                onClick={handleLike}
-                disabled={liked || loading || count === null}
-                aria-label={liked ? 'You liked this portfolio' : 'Like this portfolio'}
-                aria-pressed={liked}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.55rem',
-                  padding: '0.75rem 1.25rem',
-                  width: '100%',
-                  background: liked
-                    ? 'linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, transparent), color-mix(in srgb, var(--color-secondary) 12%, transparent))'
-                    : 'transparent',
-                  border: 'none',
-                  cursor: liked || count === null ? 'default' : loading ? 'wait' : 'pointer',
-                  color: liked ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                  transition: 'background 0.3s ease, color 0.3s ease',
-                  userSelect: 'none',
-                  whiteSpace: 'nowrap',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <span style={{
-                  fontSize: '1.2rem',
-                  lineHeight: 1,
-                  display: 'block',
-                  animation: pulse ? 'heartBeat 0.6s ease' : 'none',
-                  filter: liked
-                    ? 'drop-shadow(0 0 8px var(--color-primary))'
-                    : 'none',
-                  transition: 'filter 0.3s ease',
-                }}>
-                  {liked ? '♥' : '♡'}
-                </span>
-                <span
-                  className="mono"
-                  style={{
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    ...(liked ? {
-                      background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      color: 'transparent',
-                    } : {
-                      color: 'var(--color-text-muted)',
-                    }),
-                  }}
-                >
-                  {liked ? `${count} liked` : count !== null && count > 0 ? `${count}` : 'Like'}
-                </span>
-              </button>
-
-              {/* Gradient divider */}
-              <div style={{
-                height: '1px',
-                background: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary))',
-                opacity: 0.4,
-              }} />
-
-              {/* Scroll row */}
-              <button
-                className="hud-scroll-row"
-                onClick={scrollToTop}
-                aria-label="Scroll back to top"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.4rem',
-                  padding: '0.6rem 1.25rem',
-                  width: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--color-text-muted)',
-                  transition: 'color 0.2s ease, background 0.2s ease',
-                  whiteSpace: 'nowrap',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="18 15 12 9 6 15" />
-                </svg>
-                <span className="mono" style={{ fontSize: '0.73rem', fontWeight: 600 }}>top</span>
-              </button>
-            </div>
+          {/* ── Title bar ── */}
+          <div className="hud-titlebar">
+            <span className="hud-dot" style={{ background: '#ff5f57' }} />
+            <span className="hud-dot" style={{ background: '#febc2e' }} />
+            <span className="hud-dot" style={{ background: '#28c840' }} />
+            <span className="hud-filename">portfolio.state</span>
+            <span style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.12)', fontSize: '0.58rem' }}>
+              {blink ? '▌' : ' '}
+            </span>
           </div>
-        ) : (
-          /* ── SOLO scroll-to-top button ── */
-          showScroll && (
-            <button
-              className="hud-scroll-solo"
-              onClick={scrollToTop}
-              onMouseEnter={() => setScrollHovered(true)}
-              onMouseLeave={() => setScrollHovered(false)}
-              aria-label="Scroll back to top"
+
+          {/* ── scrollDepth row ── */}
+          <div
+            className="hud-row"
+            onClick={scrollToTop}
+            onMouseEnter={() => setHover('scroll')}
+            onMouseLeave={() => setHover(null)}
+            title="click to scroll to top"
+          >
+            <span className="hud-prompt">{hover === 'scroll' ? '►' : '▷'}</span>
+            <span className="hud-key">scrollDepth</span>
+            <span className="hud-eq">=</span>
+            <span className="hud-val">{scrollDepth}<span style={{ color: 'rgba(127,176,105,0.6)', fontWeight: 400 }}>%</span></span>
+            {hover === 'scroll' && (
+              <span style={{ marginLeft: 'auto', color: 'var(--color-secondary)', fontSize: '0.8rem' }}>↑</span>
+            )}
+          </div>
+
+          <div className="hud-divider" />
+
+          {/* ── likes row ── */}
+          <div
+            className={`hud-row like${liked ? ' liked-state' : ''}`}
+            onClick={onLikeClick}
+            onMouseEnter={() => setHover('like')}
+            onMouseLeave={() => setHover(null)}
+            style={{ cursor: liked || count === null ? 'default' : 'pointer' }}
+          >
+            <span className="hud-prompt">{hover === 'like' ? '►' : '▷'}</span>
+            <span className="hud-key">likes</span>
+            <span className="hud-eq">=</span>
+            <span className={`hud-val${pulse ? ' hud-val-liked' : ''}`}>
+              {count ?? '…'}
+            </span>
+            <span
+              className="hud-heart"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 52,
-                height: 52,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
-                boxShadow: scrollHovered
-                  ? '0 8px 28px color-mix(in srgb, var(--color-primary) 55%, transparent), 0 4px 12px rgba(0,0,0,0.3)'
-                  : '0 4px 20px color-mix(in srgb, var(--color-primary) 35%, transparent), 0 8px 25px rgba(0,0,0,0.2)',
+                color: liked ? 'var(--color-primary)' : 'rgba(240,246,252,0.25)',
+                filter: liked ? 'drop-shadow(0 0 6px var(--color-primary))' : 'none',
+                animation: pulse ? 'heartPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275)' : 'none',
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="18 15 12 9 6 15" />
-              </svg>
-            </button>
-          )
-        )}
+              {liked ? '♥' : '♡'}
+            </span>
+          </div>
+
+          {/* ── Hint line (only on hover) ── */}
+          {hover && (
+            <div className="hud-hint">
+              {hover === 'scroll'
+                ? '// click → scroll to top'
+                : liked
+                  ? '// already liked ♥'
+                  : '// click → send appreciation'}
+            </div>
+          )}
+
+        </div>
       </div>
     </>
   );
