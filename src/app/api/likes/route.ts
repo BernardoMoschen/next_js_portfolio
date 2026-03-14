@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { kv } from '@vercel/kv';
 
 const LIKES_KEY = 'likes:total';
 const IP_TTL_SECONDS = 60 * 60 * 24; // 24 hours
 
-function getIp(req: NextRequest): string {
-  return (
+function getIpKey(req: NextRequest): string | null {
+  const raw =
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
-  );
+    req.headers.get('x-real-ip');
+
+  if (!raw) return null;
+
+  const hash = createHash('sha256').update(raw).digest('hex').slice(0, 16);
+  return `likes:ip:${hash}`;
 }
 
 export async function GET() {
@@ -22,21 +26,19 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = getIp(req);
-  const ipKey = `likes:ip:${ip}`;
+  const ipKey = getIpKey(req);
 
   try {
-    const alreadyLiked = await kv.exists(ipKey);
-    if (alreadyLiked) {
-      const count = (await kv.get<number>(LIKES_KEY)) ?? 0;
-      return NextResponse.json({ count, alreadyLiked: true }, { status: 409 });
+    if (ipKey) {
+      // Atomic SET NX: returns 'OK' if key was created, null if already existed
+      const wasSet = await kv.set(ipKey, 1, { ex: IP_TTL_SECONDS, nx: true });
+      if (wasSet === null) {
+        const count = (await kv.get<number>(LIKES_KEY)) ?? 0;
+        return NextResponse.json({ count, alreadyLiked: true }, { status: 409 });
+      }
     }
 
-    const [count] = await Promise.all([
-      kv.incr(LIKES_KEY),
-      kv.set(ipKey, 1, { ex: IP_TTL_SECONDS }),
-    ]);
-
+    const count = await kv.incr(LIKES_KEY);
     return NextResponse.json({ count });
   } catch {
     return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });

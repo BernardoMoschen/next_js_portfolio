@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import siteConfig from '../../config/site';
 
 export const runtime = 'edge';
 
@@ -53,7 +54,7 @@ export async function GET() {
             letterSpacing: '0.05em',
           }}
         >
-          ~/bernardo.moschen
+          ~/{siteConfig.domain}
         </div>
 
         {/* Name */}
@@ -68,10 +69,10 @@ export async function GET() {
             letterSpacing: '-0.02em',
           }}
         >
-          Bernardo Moschen
+          {siteConfig.name}
         </div>
 
-        {/* Title with gradient */}
+        {/* Title */}
         <div
           style={{
             display: 'flex',
@@ -81,7 +82,7 @@ export async function GET() {
             marginBottom: '40px',
           }}
         >
-          Full-Stack Engineer
+          {siteConfig.title}
         </div>
 
         {/* Tech stack chips */}
@@ -115,7 +116,7 @@ export async function GET() {
             letterSpacing: '0.05em',
           }}
         >
-          bernardomoschen.dev
+          {siteConfig.domain}
         </div>
       </div>
     ),

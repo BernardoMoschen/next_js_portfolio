@@ -1,22 +1,43 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const LS_KEY = 'portfolio:liked';
+
+function lsGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function lsSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // storage unavailable (private mode, quota exceeded, etc.)
+  }
+}
 
 const LikeButton: React.FC = () => {
   const [count, setCount] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const pulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setLiked(localStorage.getItem(LS_KEY) === '1');
+    setLiked(lsGet(LS_KEY) === '1');
 
     fetch('/api/likes')
       .then((r) => r.json())
       .then((data) => setCount(data.count ?? 0))
       .catch(() => setCount(0));
+
+    return () => {
+      if (pulseTimer.current) clearTimeout(pulseTimer.current);
+    };
   }, []);
 
   const handleLike = async () => {
@@ -30,12 +51,12 @@ const LikeButton: React.FC = () => {
       if (res.ok) {
         setCount(data.count);
         setLiked(true);
-        localStorage.setItem(LS_KEY, '1');
+        lsSet(LS_KEY, '1');
         setPulse(true);
-        setTimeout(() => setPulse(false), 600);
+        pulseTimer.current = setTimeout(() => setPulse(false), 600);
       } else if (res.status === 409) {
         setLiked(true);
-        localStorage.setItem(LS_KEY, '1');
+        lsSet(LS_KEY, '1');
         if (data.count !== undefined) setCount(data.count);
       }
     } catch {
@@ -46,8 +67,13 @@ const LikeButton: React.FC = () => {
   };
 
   return (
-    <div
+    <button
+      type="button"
       className="mono"
+      onClick={handleLike}
+      disabled={liked || loading}
+      aria-label={liked ? 'You liked this portfolio' : 'Like this portfolio'}
+      aria-pressed={liked}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -58,11 +84,10 @@ const LikeButton: React.FC = () => {
         transition: 'color 0.25s ease',
         userSelect: 'none',
         transform: pulse ? 'scale(1.08)' : 'scale(1)',
+        background: 'none',
+        border: 'none',
+        padding: 0,
       }}
-      onClick={handleLike}
-      role="button"
-      aria-label={liked ? 'You liked this portfolio' : 'Like this portfolio'}
-      aria-pressed={liked}
     >
       <span
         style={{
@@ -81,7 +106,7 @@ const LikeButton: React.FC = () => {
             ? `${count} liked this`
             : `${count} people liked this`}
       </span>
-    </div>
+    </button>
   );
 };
 

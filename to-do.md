@@ -43,7 +43,7 @@
 - [x] **Add JSON-LD to project detail pages** — Added `SoftwareApplication` schema to
       `/projects/[slug]/page.tsx` using project data.
 
-- [ ] **Fix `lastModified` in sitemap** — Sitemap currently omits `lastModified` (correct behavior).
+- [x] **Fix `lastModified` in sitemap** — Sitemap currently omits `lastModified` (correct behavior).
       No action needed.
 
 ## 🟢 Accessibility
