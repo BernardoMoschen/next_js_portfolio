@@ -20,13 +20,16 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('locale');
-      if (stored === 'en' || stored === 'pt-br') return stored;
+  const [locale, setLocaleState] = useState<Locale>('en');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('locale');
+    if (stored === 'en' || stored === 'pt-br') {
+      setLocaleState(stored);
+    } else if (navigator.language.toLowerCase().startsWith('pt')) {
+      setLocaleState('pt-br');
     }
-    return 'en';
-  });
+  }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);

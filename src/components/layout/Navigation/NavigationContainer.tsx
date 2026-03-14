@@ -3,8 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import MobileNavigation from './MobileNavigation';
 import DesktopNavigation from './DesktopNavigation';
 import BrandLogo from './BrandLogo';
-import ScrollToTopButton from './ScrollToTopButton';
-import { menuItems, scrollToSection, scrollToTop } from './utils';
+import { menuItems, scrollToSection } from './utils';
 import { useI18n } from '../../../i18n';
 
 function useIsMobile(breakpoint = 768) {
@@ -143,7 +142,6 @@ const NavigationContainer: React.FC = () => {
                     )}
                 </nav>
             </header>
-            <ScrollToTopButton show={scrolled} onClick={scrollToTop} />
         </>
     );
 };
