@@ -15,7 +15,7 @@ export default function NotFound() {
             <span className={`${styles.terminalTitle} mono`}>bash — 80x24</span>
           </div>
           <div className={`${styles.terminalBody} mono`}>
-            <p className={styles.line}>$ find / -name &quot;this-page&quot;</p>
+            <p className={styles.line}>$ find / -name "this-page"</p>
             <p className={`${styles.line} ${styles.output}`}>&gt; searching...</p>
             <p className={`${styles.line} ${styles.output} ${styles.error}`}>&gt; ERROR: page not found</p>
             <p className={`${styles.line} ${styles.output}`}>&gt;</p>
@@ -23,17 +23,17 @@ export default function NotFound() {
             <p className={`${styles.line} ${styles.output}`}>
               &gt;&nbsp;&nbsp;
               <Link href="/#hero" className={styles.link}>cd /home</Link>
-              <span className={styles.comment}>&mdash; go back to start</span>
+              <span className={styles.comment}>— go back to start</span>
             </p>
             <p className={`${styles.line} ${styles.output}`}>
               &gt;&nbsp;&nbsp;
               <Link href="/#projects" className={styles.link}>ls /projects</Link>
-              <span className={styles.comment}>&mdash; browse my work</span>
+              <span className={styles.comment}>— browse my work</span>
             </p>
             <p className={`${styles.line} ${styles.output}`}>
               &gt;&nbsp;&nbsp;
               <Link href="/#contact" className={styles.link}>cat /contact</Link>
-              <span className={styles.comment}>&mdash; get in touch</span>
+              <span className={styles.comment}>— get in touch</span>
             </p>
             <p className={styles.line}>$ <span className={styles.cursor}>_</span></p>
           </div>

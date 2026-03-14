@@ -20,7 +20,14 @@ export const scrollState = {
     } as SectionProgress,
 };
 
-export const mouseState = {
+export interface MouseState {
+    x: number;
+    y: number;
+    targetX: number;
+    targetY: number;
+}
+
+export const mouseState: MouseState = {
     x: 0,
     y: 0,
     targetX: 0,

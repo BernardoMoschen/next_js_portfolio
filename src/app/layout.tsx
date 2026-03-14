@@ -40,7 +40,7 @@ const websiteJsonLd = {
   description: siteConfig.description,
   author: { '@type': 'Person', name: siteConfig.name },
   inLanguage: 'en-US',
-  copyrightYear: '2024',
+  copyrightYear: new Date().getFullYear(),
   genre: 'Portfolio',
 };
 

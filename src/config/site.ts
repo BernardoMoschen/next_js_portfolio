@@ -17,7 +17,7 @@ export const siteConfig = {
   favicon: '/favicon.svg',
 
   securityContact: 'bernardomoschen.dev@gmail.com',
-  securityExpiry: '2025-12-31T23:59:59.000Z',
+  securityExpiry: '2027-03-13T23:59:59.000Z',
 } as const;
 
 export default siteConfig;
