@@ -1,204 +1,190 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLikes } from '../../context/LikesContext';
 import { scrollToTop } from '../layout/Navigation/utils';
 
 const BottomRightHUD: React.FC = () => {
   const { count, liked, loading, pulse, handleLike } = useLikes();
-  const [scrollDepth, setScrollDepth] = useState(0);
-  const [show, setShow] = useState(false);
-  const [hover, setHover] = useState<'scroll' | 'like' | null>(null);
-  const [blink, setBlink] = useState(true);
+  const [showScroll, setShowScroll] = useState(false);
+  const [showLike, setShowLike] = useState(false);
+  const [hoverLike, setHoverLike] = useState(false);
+  const [hoverScroll, setHoverScroll] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      setScrollDepth(total > 0 ? Math.round((y / total) * 100) : 0);
-      setShow(y > 100);
+      setShowScroll(y > 100);
+      setShowLike(y > 300);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => setBlink(b => !b), 530);
-    return () => clearInterval(id);
-  }, []);
-
-  const onLikeClick = useCallback(() => {
-    if (!liked && !loading && count !== null) handleLike();
-  }, [liked, loading, count, handleLike]);
-
   return (
     <>
       <style>{`
-        @keyframes accentGlow {
-          0%, 100% { box-shadow: -1px 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent), 0 16px 40px rgba(0,0,0,0.55); }
-          50%       { box-shadow: -1px 0 20px color-mix(in srgb, var(--color-secondary) 40%, transparent), 0 16px 40px rgba(0,0,0,0.55); }
+        @keyframes morphA {
+          0%   { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+          20%  { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+          40%  { border-radius: 50% 40% 60% 30% / 40% 70% 30% 60%; }
+          60%  { border-radius: 40% 70% 30% 60% / 70% 30% 60% 40%; }
+          80%  { border-radius: 70% 30% 50% 50% / 30% 70% 40% 60%; }
+          100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
         }
-        @keyframes heartPop {
+        @keyframes morphB {
+          0%   { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+          25%  { border-radius: 70% 30% 40% 60% / 60% 40% 50% 40%; }
+          50%  { border-radius: 30% 70% 50% 50% / 50% 30% 70% 40%; }
+          75%  { border-radius: 60% 40% 60% 40% / 30% 60% 40% 70%; }
+          100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+        }
+        @keyframes glowLike {
+          0%, 100% {
+            box-shadow:
+              0 0 18px color-mix(in srgb, var(--color-primary) 45%, transparent),
+              0 10px 32px rgba(0,0,0,0.45);
+          }
+          50% {
+            box-shadow:
+              0 0 32px color-mix(in srgb, var(--color-primary) 65%, transparent),
+              0 0 14px color-mix(in srgb, var(--color-secondary) 35%, transparent),
+              0 10px 32px rgba(0,0,0,0.45);
+          }
+        }
+        @keyframes glowScroll {
+          0%, 100% {
+            box-shadow:
+              0 0 12px color-mix(in srgb, var(--color-secondary) 40%, transparent),
+              0 6px 22px rgba(0,0,0,0.4);
+          }
+          50% {
+            box-shadow:
+              0 0 24px color-mix(in srgb, var(--color-secondary) 60%, transparent),
+              0 6px 22px rgba(0,0,0,0.4);
+          }
+        }
+        @keyframes heartBurst {
           0%   { transform: scale(1); }
-          35%  { transform: scale(1.7); }
-          65%  { transform: scale(1.25); }
+          30%  { transform: scale(2); }
+          65%  { transform: scale(1.4); }
           100% { transform: scale(1); }
         }
-        @keyframes valueFlash {
-          0%   { color: var(--color-secondary); }
-          100% { color: var(--color-primary); }
+
+        .blob-like {
+          animation: morphA 7s ease-in-out infinite, glowLike 3.5s ease-in-out infinite;
         }
-        .hud-root {
-          font-family: 'JetBrains Mono', 'Fira Code', monospace;
-          font-size: 0.73rem;
-          line-height: 1;
-          position: fixed;
-          bottom: 2rem;
-          right: 1.5rem;
-          z-index: 1000;
-          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        .blob-like:hover:not(:disabled) {
+          animation: morphA 2s ease-in-out infinite, glowLike 1.2s ease-in-out infinite;
         }
-        .hud-panel {
-          background: rgba(7, 7, 9, 0.93);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-left: 2.5px solid var(--color-primary);
-          border-radius: 7px;
-          overflow: hidden;
-          min-width: 210px;
-          animation: accentGlow 4s ease-in-out infinite;
+        .blob-scroll {
+          animation: morphB 5.5s ease-in-out infinite, glowScroll 3s ease-in-out infinite;
         }
-        .hud-titlebar {
-          padding: 5px 11px;
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-        .hud-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-        .hud-filename {
-          margin-left: 8px;
-          color: rgba(255,255,255,0.18);
-          font-size: 0.61rem;
-          letter-spacing: 0.04em;
-        }
-        .hud-row {
-          padding: 8px 11px;
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          transition: background 0.12s ease;
-          cursor: pointer;
-          user-select: none;
-          white-space: nowrap;
-        }
-        .hud-row:hover { background: rgba(127,176,105,0.06); }
-        .hud-row.like:hover { background: rgba(255,138,80,0.06); }
-        .hud-row.liked-state { background: rgba(127,176,105,0.04); }
-        .hud-prompt { color: var(--color-secondary); font-size: 0.65rem; flex-shrink: 0; }
-        .hud-key { color: rgba(240,246,252,0.38); flex-shrink: 0; }
-        .hud-eq  { color: rgba(240,246,252,0.18); flex-shrink: 0; }
-        .hud-val { color: var(--color-primary); font-weight: 700; }
-        .hud-val-liked { animation: valueFlash 0.3s ease forwards; }
-        .hud-heart {
-          margin-left: auto;
-          font-size: 1rem;
-          flex-shrink: 0;
-          transition: color 0.25s ease, filter 0.25s ease;
-        }
-        .hud-hint {
-          padding: 4px 11px 5px;
-          border-top: 1px solid rgba(255,255,255,0.03);
-          color: rgba(255,255,255,0.16);
-          font-size: 0.6rem;
-          font-style: italic;
-          letter-spacing: 0.01em;
-        }
-        .hud-divider {
-          height: 1px;
-          background: rgba(255,255,255,0.04);
-          margin: 0 11px;
+        .blob-scroll:hover {
+          animation: morphB 1.8s ease-in-out infinite, glowScroll 1s ease-in-out infinite;
         }
       `}</style>
 
-      <div
-        className="hud-root"
+      {/* ── Like blob ── */}
+      <button
+        type="button"
+        className="blob-like"
+        onClick={liked || loading || count === null ? undefined : handleLike}
+        onMouseEnter={() => setHoverLike(true)}
+        onMouseLeave={() => setHoverLike(false)}
+        aria-label={liked ? 'You liked this portfolio' : 'Like this portfolio'}
+        aria-pressed={liked}
+        disabled={liked || loading || count === null}
         style={{
-          opacity: show ? 1 : 0,
-          pointerEvents: show ? 'auto' : 'none',
-          transform: show ? 'translateY(0)' : 'translateY(12px)',
+          position: 'fixed',
+          bottom: showScroll ? '5.75rem' : '2rem',
+          right: '1.75rem',
+          zIndex: 1000,
+          width: hoverLike ? 76 : 66,
+          height: hoverLike ? 76 : 66,
+          background: liked
+            ? 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)'
+            : 'linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 55%, #000) 0%, color-mix(in srgb, var(--color-secondary) 55%, #000) 100%)',
+          border: 'none',
+          cursor: liked || count === null ? 'default' : 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          opacity: showLike ? 1 : 0,
+          pointerEvents: showLike ? 'auto' : 'none',
+          transform: showLike ? 'scale(1)' : 'scale(0.5)',
+          transition: [
+            'opacity 0.45s ease',
+            'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            'bottom 0.4s ease',
+            'width 0.3s ease',
+            'height 0.3s ease',
+            'background 0.4s ease',
+          ].join(', '),
         }}
       >
-        <div className="hud-panel">
+        <span style={{
+          fontSize: '1.25rem',
+          lineHeight: 1,
+          display: 'block',
+          animation: pulse ? 'heartBurst 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none',
+          filter: liked ? 'drop-shadow(0 0 7px rgba(255,255,255,0.85))' : 'none',
+          transition: 'filter 0.3s ease',
+        }}>
+          {liked ? '♥' : '♡'}
+        </span>
+        {count !== null && (
+          <span style={{
+            fontSize: '0.6rem',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontWeight: 700,
+            marginTop: 4,
+            opacity: 0.88,
+            letterSpacing: '0.02em',
+          }}>
+            {count}
+          </span>
+        )}
+      </button>
 
-          {/* ── Title bar ── */}
-          <div className="hud-titlebar">
-            <span className="hud-dot" style={{ background: '#ff5f57' }} />
-            <span className="hud-dot" style={{ background: '#febc2e' }} />
-            <span className="hud-dot" style={{ background: '#28c840' }} />
-            <span className="hud-filename">portfolio.state</span>
-            <span style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.12)', fontSize: '0.58rem' }}>
-              {blink ? '▌' : ' '}
-            </span>
-          </div>
-
-          {/* ── scrollDepth row ── */}
-          <div
-            className="hud-row"
-            onClick={scrollToTop}
-            onMouseEnter={() => setHover('scroll')}
-            onMouseLeave={() => setHover(null)}
-            title="click to scroll to top"
-          >
-            <span className="hud-prompt">{hover === 'scroll' ? '►' : '▷'}</span>
-            <span className="hud-key">scrollDepth</span>
-            <span className="hud-eq">=</span>
-            <span className="hud-val">{scrollDepth}<span style={{ color: 'rgba(127,176,105,0.6)', fontWeight: 400 }}>%</span></span>
-            {hover === 'scroll' && (
-              <span style={{ marginLeft: 'auto', color: 'var(--color-secondary)', fontSize: '0.8rem' }}>↑</span>
-            )}
-          </div>
-
-          <div className="hud-divider" />
-
-          {/* ── likes row ── */}
-          <div
-            className={`hud-row like${liked ? ' liked-state' : ''}`}
-            onClick={onLikeClick}
-            onMouseEnter={() => setHover('like')}
-            onMouseLeave={() => setHover(null)}
-            style={{ cursor: liked || count === null ? 'default' : 'pointer' }}
-          >
-            <span className="hud-prompt">{hover === 'like' ? '►' : '▷'}</span>
-            <span className="hud-key">likes</span>
-            <span className="hud-eq">=</span>
-            <span className={`hud-val${pulse ? ' hud-val-liked' : ''}`}>
-              {count ?? '…'}
-            </span>
-            <span
-              className="hud-heart"
-              style={{
-                color: liked ? 'var(--color-primary)' : 'rgba(240,246,252,0.25)',
-                filter: liked ? 'drop-shadow(0 0 6px var(--color-primary))' : 'none',
-                animation: pulse ? 'heartPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275)' : 'none',
-              }}
-            >
-              {liked ? '♥' : '♡'}
-            </span>
-          </div>
-
-          {/* ── Hint line (only on hover) ── */}
-          {hover && (
-            <div className="hud-hint">
-              {hover === 'scroll'
-                ? '// click → scroll to top'
-                : liked
-                  ? '// already liked ♥'
-                  : '// click → send appreciation'}
-            </div>
-          )}
-
-        </div>
-      </div>
+      {/* ── Scroll-to-top blob ── */}
+      <button
+        className="blob-scroll"
+        onClick={scrollToTop}
+        onMouseEnter={() => setHoverScroll(true)}
+        onMouseLeave={() => setHoverScroll(false)}
+        aria-label="Scroll to top"
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '1.75rem',
+          zIndex: 1000,
+          width: hoverScroll ? 52 : 46,
+          height: hoverScroll ? 52 : 46,
+          background: 'linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%)',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          fontSize: '1rem',
+          fontWeight: 700,
+          opacity: showScroll ? 1 : 0,
+          pointerEvents: showScroll ? 'auto' : 'none',
+          transform: showScroll ? 'scale(1)' : 'scale(0.5) translateY(8px)',
+          transition: [
+            'opacity 0.45s ease',
+            'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            'width 0.3s ease',
+            'height 0.3s ease',
+          ].join(', '),
+        }}
+      >
+        ↑
+      </button>
     </>
   );
 };
