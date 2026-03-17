@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import siteConfig from '../../../config/site';
+import { RATE_LIMIT_WINDOW, RATE_LIMIT_MAX, FIELD_MAX_LENGTHS } from '../../../config/api';
+import { EMAIL_REGEX } from '../../../utils/validation';
 
 const rateLimit = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW = 60_000;
-const RATE_LIMIT_MAX = 3;
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -47,12 +47,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
-    if (name.length > 100 || email.length > 254 || subject.length > 200 || message.length > 5000) {
+    if (name.length > FIELD_MAX_LENGTHS.name || email.length > FIELD_MAX_LENGTHS.email || subject.length > FIELD_MAX_LENGTHS.subject || message.length > FIELD_MAX_LENGTHS.message) {
       return NextResponse.json({ error: 'Field length exceeds limit' }, { status: 400 });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 

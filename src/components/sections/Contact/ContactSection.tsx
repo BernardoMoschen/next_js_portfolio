@@ -6,6 +6,7 @@ import { AnimateOnScroll, SlideIn } from '../../utils/animations';
 import SectionAnchor from '../../utils/SectionAnchor';
 import { useThemeMode } from '../../theme/ThemeContext';
 import { useI18n } from '../../../i18n';
+import { EMAIL_REGEX } from '../../../utils/validation';
 
 const ContactSection: React.FC = () => {
   const { darkMode } = useThemeMode();
@@ -25,8 +26,6 @@ const ContactSection: React.FC = () => {
     subject: false,
     message: false,
   });
-
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const getFieldError = (field: string): string | null => {
     const value = formData[field as keyof typeof formData].trim();
