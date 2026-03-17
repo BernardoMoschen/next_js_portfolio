@@ -73,3 +73,65 @@
 
 - [ ] **Run bundle analyzer** — Add `@next/bundle-analyzer` and check if Three.js or any
       other dependency can be split further to reduce initial JS payload.
+
+- [x] **Profile image format mismatch** — Updated `site.ts` and `Hero/utils.ts` to `.webp`,
+      matching the existing `<link rel=preload>` in `layout.tsx`.
+
+- [ ] **3D scene has no loading state** — WebGL init takes visible time with no user feedback.
+      Add a skeleton or loading message while the canvas initializes.
+
+## 🟢 Accessibility (new)
+
+- [x] **Form error messages not linked to inputs** — Added `aria-describedby`, `id`, `role=alert`,
+      and `aria-live=assertive` to all four contact form fields and their error spans.
+
+- [x] **LikeButton not keyboard-accessible** — Already a proper `<button>` element; natively
+      handles Enter/Space. No changes needed.
+
+- [x] **Add 3D scene fallback for no-JS / no-WebGL** — Already handled: `CSSGlobe` fallback,
+      `prefers-reduced-motion` guard, and `WebGLErrorBoundary` all present. No changes needed.
+
+## 🔴 Code Quality
+
+- [x] **Duplicate `statusMap`** — Extracted to `src/constants/projectConstants.ts`; both
+      `ProjectsSection` and `ProjectDetail` now import from there.
+
+- [x] **Duplicate email regex** — Extracted to `src/utils/validation.ts`; both `ContactSection`
+      and `api/contact/route.ts` now import `EMAIL_REGEX` from there.
+
+- [x] **Magic numbers in API route** — Moved to `src/config/api.ts` (`RATE_LIMIT_WINDOW`,
+      `RATE_LIMIT_MAX`, `FIELD_MAX_LENGTHS`).
+
+- [ ] **Refactor ContactSection** — 700+ lines with heavy inline styles (`ContactSection.tsx:176-705`).
+      Extract styles to `contact.module.css` and split the blob/animation logic into a
+      sub-component.
+
+- [ ] **Split ProjectDetail into sub-components** — `ProjectDetail.tsx` is 800+ lines with
+      66+ inline style objects. Split into `ProjectHero`, `ProjectTechStack`, `ProjectResults`,
+      and `ProjectNavigation`.
+
+## 🟡 Testing
+
+- [ ] **Add test suite — zero coverage currently** — No `.test.tsx` / `.spec.ts` files exist.
+      Start with:
+      - `ContactSection.test.tsx` — validation rules, submission, error states
+      - `validation.test.ts` — email regex, field length rules
+      - `api/contact.test.ts` — rate limiting, input sanitization
+      - `ThemeContext.test.tsx` — theme persistence, system preference detection
+
+## 🔵 Features / Ideas
+
+- [x] **Dynamic OG images per project page** — Extended `/og` route with `?slug` param; project
+      pages now pass slug-specific `openGraph` and `twitter` metadata.
+
+- [ ] **Stronger resume CTA** — The PDF exists at `/resume.pdf` and the hero button is present,
+      but consider anchoring it more prominently (e.g. sticky in the nav or floating CTA).
+
+- [ ] **Blog / articles section** — MDX-based at `/blog`. Natural fit with the stack; adds a
+      content channel without third-party dependencies.
+
+- [x] **JSON-LD author field on project pages** — Already present in
+      `projects/[slug]/page.tsx`. No changes needed.
+
+- [ ] **Add `article` Open Graph type to project pages** — `projects/[slug]/page.tsx` doesn't
+      set `og:type: 'article'`. Helps social platforms categorize the page correctly.
