@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { HiMail } from 'react-icons/hi';
@@ -45,8 +45,26 @@ const HeroSection: React.FC = () => {
   const { t } = useI18n();
   const titleText = `{ ${t.hero.title} }`;
   const { displayText, showCursor } = useTypingEffect(titleText, 600, 40);
+
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [plasma, setPlasma] = useState({ x: -600, y: -600 });
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    const rect = heroRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setPlasma({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  }, []);
+
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    el.addEventListener('mousemove', onMouseMove, { passive: true });
+    return () => el.removeEventListener('mousemove', onMouseMove);
+  }, [onMouseMove]);
+
   return (
     <div
+      ref={heroRef}
       style={{
         width: '100%',
         height: '100%',
@@ -59,6 +77,36 @@ const HeroSection: React.FC = () => {
         padding: '5rem 1.5rem 6rem',
       }}
     >
+      {/* Cursor-following plasma orb */}
+      <style>{`
+        @keyframes plasmaMorph {
+          0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+          20%     { border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%; }
+          40%     { border-radius: 70% 30% 45% 55% / 30% 65% 35% 70%; }
+          60%     { border-radius: 45% 55% 65% 35% / 55% 45% 55% 45%; }
+          80%     { border-radius: 30% 70% 55% 45% / 65% 35% 70% 30%; }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          width: 480,
+          height: 420,
+          left: 0,
+          top: 0,
+          transform: `translate(${plasma.x - 240}px, ${plasma.y - 210}px)`,
+          transition: 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          background: 'radial-gradient(ellipse at 40% 45%, var(--color-secondary), var(--color-primary) 45%, transparent 70%)',
+          filter: 'blur(72px)',
+          opacity: 0.16,
+          animation: 'plasmaMorph 9s ease-in-out infinite',
+          pointerEvents: 'none',
+          zIndex: 1,
+          mixBlendMode: 'screen',
+        }}
+      />
+
       {/* Main content — centered vertically */}
       <div
         style={{
@@ -69,6 +117,8 @@ const HeroSection: React.FC = () => {
           maxWidth: '64rem',
           width: '100%',
           textAlign: 'center',
+          position: 'relative',
+          zIndex: 2,
         }}
       >
         {/* Profile photo */}
