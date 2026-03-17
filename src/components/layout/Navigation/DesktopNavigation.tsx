@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { HiDownload } from 'react-icons/hi';
 import { ThemeToggle } from '../../theme';
 import { SoundToggle, useSoundContext } from '../../audio';
 import LanguageSwitcher from '../LanguageSwitcher';
+import { useI18n } from '../../../i18n';
 
 interface MenuItem {
     label: string;
@@ -21,6 +23,7 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
 }) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const { playSound } = useSoundContext();
+    const { t } = useI18n();
 
     return (
         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -100,6 +103,37 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
                 <ThemeToggle />
                 <SoundToggle />
                 <LanguageSwitcher />
+                <a
+                    href="/resume.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '7px 14px',
+                        borderRadius: 8,
+                        border: '1px solid var(--color-primary)',
+                        color: 'var(--color-primary)',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        textDecoration: 'none',
+                        transition: 'background 0.2s ease, box-shadow 0.2s ease',
+                        marginLeft: 8,
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(var(--color-primary-rgb, 99,102,241), 0.12)';
+                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 0 12px rgba(var(--color-primary-rgb, 99,102,241), 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = 'none';
+                    }}
+                >
+                    <HiDownload size={13} />
+                    {t.nav.resume}
+                </a>
             </div>
         </div>
     );
