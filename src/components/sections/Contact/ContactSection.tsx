@@ -339,6 +339,7 @@ const ContactSection: React.FC = () => {
                       onBlur={handleBlur}
                       required
                       aria-invalid={touched.name && !!getFieldError('name')}
+                      aria-describedby="field-name-error"
                       placeholder={t.contact.placeholders.name}
                       style={{
                         width: '100%',
@@ -351,7 +352,7 @@ const ContactSection: React.FC = () => {
                       <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-success)', fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>✓</span>
                     )}
                   </div>
-                  <span className={`field-error mono${touched.name && getFieldError('name') ? ' visible' : ''}`}>
+                  <span id="field-name-error" role="alert" aria-live="assertive" className={`field-error mono${touched.name && getFieldError('name') ? ' visible' : ''}`}>
                     {getFieldError('name') || '\u00A0'}
                   </span>
                 </div>
@@ -374,6 +375,7 @@ const ContactSection: React.FC = () => {
                       onBlur={handleBlur}
                       required
                       aria-invalid={touched.email && !!getFieldError('email')}
+                      aria-describedby="field-email-error"
                       placeholder={t.contact.placeholders.email}
                       style={{
                         width: '100%',
@@ -386,7 +388,7 @@ const ContactSection: React.FC = () => {
                       <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-success)', fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>✓</span>
                     )}
                   </div>
-                  <span className={`field-error mono${touched.email && getFieldError('email') ? ' visible' : ''}`}>
+                  <span id="field-email-error" role="alert" aria-live="assertive" className={`field-error mono${touched.email && getFieldError('email') ? ' visible' : ''}`}>
                     {getFieldError('email') || '\u00A0'}
                   </span>
                 </div>
@@ -410,6 +412,7 @@ const ContactSection: React.FC = () => {
                     onBlur={handleBlur}
                     required
                     aria-invalid={touched.subject && !!getFieldError('subject')}
+                    aria-describedby="field-subject-error"
                     placeholder={t.contact.placeholders.subject}
                     style={{
                       width: '100%',
@@ -422,7 +425,7 @@ const ContactSection: React.FC = () => {
                     <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-success)', fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>✓</span>
                   )}
                 </div>
-                <span className={`field-error mono${touched.subject && getFieldError('subject') ? ' visible' : ''}`}>
+                <span id="field-subject-error" role="alert" aria-live="assertive" className={`field-error mono${touched.subject && getFieldError('subject') ? ' visible' : ''}`}>
                   {getFieldError('subject') || '\u00A0'}
                 </span>
               </div>
@@ -444,6 +447,7 @@ const ContactSection: React.FC = () => {
                     onBlur={handleBlur}
                     required
                     aria-invalid={touched.message && !!getFieldError('message')}
+                    aria-describedby="field-message-error"
                     placeholder={t.contact.placeholders.message}
                     rows={5}
                     style={{
@@ -458,7 +462,7 @@ const ContactSection: React.FC = () => {
                     <span style={{ position: 'absolute', right: 12, top: 16, color: 'var(--color-success)', fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>✓</span>
                   )}
                 </div>
-                <span className={`field-error mono${touched.message && getFieldError('message') ? ' visible' : ''}`}>
+                <span id="field-message-error" role="alert" aria-live="assertive" className={`field-error mono${touched.message && getFieldError('message') ? ' visible' : ''}`}>
                   {getFieldError('message') || '\u00A0'}
                 </span>
               </div>

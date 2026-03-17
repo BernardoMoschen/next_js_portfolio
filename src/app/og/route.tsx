@@ -1,9 +1,27 @@
 import { ImageResponse } from 'next/og';
+import { NextRequest } from 'next/server';
 import siteConfig from '../../config/site';
+import { projects } from '../../components/data/projectsData';
 
 export const runtime = 'edge';
 
-export async function GET() {
+const GRID = 'linear-gradient(rgba(127,176,105,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(127,176,105,0.04) 1px, transparent 1px)';
+const ACCENT = 'linear-gradient(90deg, #7fb069, #e07a5f)';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get('slug');
+  const project = slug ? projects.find((p) => p.slug === slug) : null;
+
+  const title = project ? project.title : siteConfig.name;
+  const subtitle = project ? project.description : siteConfig.title;
+  const chips = project
+    ? (project.technologies ?? []).slice(0, 5)
+    : ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS'];
+  const prefix = project
+    ? `~/${siteConfig.domain}/projects`
+    : `~/${siteConfig.domain}`;
+
   return new ImageResponse(
     (
       <div
@@ -21,47 +39,22 @@ export async function GET() {
           overflow: 'hidden',
         }}
       >
-        {/* Background grid lines */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'linear-gradient(rgba(127,176,105,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(127,176,105,0.04) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
+        {/* Background grid */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: GRID, backgroundSize: '48px 48px' }} />
 
         {/* Top accent bar */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(90deg, #7fb069, #e07a5f)',
-          }}
-        />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: ACCENT }} />
 
         {/* Terminal prompt prefix */}
-        <div
-          style={{
-            display: 'flex',
-            color: '#7fb069',
-            fontSize: '22px',
-            marginBottom: '24px',
-            letterSpacing: '0.05em',
-          }}
-        >
-          ~/{siteConfig.domain}
+        <div style={{ display: 'flex', color: '#7fb069', fontSize: '22px', marginBottom: '24px', letterSpacing: '0.05em' }}>
+          {prefix}
         </div>
 
-        {/* Name */}
+        {/* Title */}
         <div
           style={{
             display: 'flex',
-            fontSize: '72px',
+            fontSize: project ? '56px' : '72px',
             fontWeight: 700,
             color: '#f0f4f8',
             lineHeight: 1.1,
@@ -69,27 +62,29 @@ export async function GET() {
             letterSpacing: '-0.02em',
           }}
         >
-          {siteConfig.name}
+          {title}
         </div>
 
-        {/* Title */}
+        {/* Subtitle */}
         <div
           style={{
             display: 'flex',
-            fontSize: '32px',
-            color: '#7fb069',
+            fontSize: '24px',
+            color: project ? '#a0aec0' : '#7fb069',
             fontWeight: 500,
             marginBottom: '40px',
+            maxWidth: '900px',
+            lineHeight: 1.4,
           }}
         >
-          {siteConfig.title}
+          {subtitle}
         </div>
 
-        {/* Tech stack chips */}
+        {/* Chips */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          {['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS'].map((tech) => (
+          {chips.map((chip) => (
             <div
-              key={tech}
+              key={chip}
               style={{
                 display: 'flex',
                 background: 'rgba(127,176,105,0.12)',
@@ -100,7 +95,7 @@ export async function GET() {
                 fontSize: '20px',
               }}
             >
-              {tech}
+              {chip}
             </div>
           ))}
         </div>
