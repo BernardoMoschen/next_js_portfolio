@@ -19,17 +19,24 @@ interface Particle {
   delay: number;
 }
 
+// Each ring lives in a different 3D plane (rotateX + rotateY defines the orbital tilt)
+const RING_CONFIGS = [
+  { rotateX: 70, rotateY:   0, color: '#7fb069', duration: 3.2 },
+  { rotateX: 16, rotateY:  68, color: '#ff8a50', duration: 4.1 },
+  { rotateX: 46, rotateY:  38, color: '#a78bfa', duration: 2.5 },
+  { rotateX: 60, rotateY: -52, color: '#34d399', duration: 5.2 },
+] as const;
+
 const PARTICLE_COLORS = ['#7fb069', '#ff8a50', '#ffd700', '#a78bfa', '#34d399', '#fb923c', '#f472b6', '#60a5fa'];
 
-function makeParticles(count = 16): Particle[] {
+function makeParticles(count = 18): Particle[] {
   const shapes: Particle['shape'][] = ['circle', 'square', 'diamond'];
   return Array.from({ length: count }, (_, i) => ({
     id: i,
-    // spread evenly + small jitter so they don't all land in a ring
-    angle: (i / count) * 360 + (Math.random() - 0.5) * 22,
+    angle: (i / count) * 360 + (Math.random() - 0.5) * 20,
     color: PARTICLE_COLORS[i % PARTICLE_COLORS.length],
     size: Math.random() * 7 + 5,
-    distance: Math.random() * 60 + 50,
+    distance: Math.random() * 70 + 55,
     duration: Math.random() * 280 + 520,
     shape: shapes[i % 3],
     spin: (Math.random() - 0.5) * 540,
@@ -45,9 +52,9 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   const clicks = useRef(0);
   const resetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Separate keys so the same animation can be re-triggered on repeat taps
-  const [wiggleKey, setWiggleKey] = useState(0);
+  const [chargeKey, setChargeKey] = useState(0);
   const [celebrateKey, setCelebrateKey] = useState(0);
+  const [visibleRings, setVisibleRings] = useState(0);
   const [celebrating, setCelebrating] = useState(false);
   const [showMsg, setShowMsg] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
@@ -57,31 +64,42 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
 
     clicks.current += 1;
     if (resetTimeout.current) clearTimeout(resetTimeout.current);
-    resetTimeout.current = setTimeout(() => { clicks.current = 0; }, 800);
+    // Reset if they go idle — rings fade, counter restarts
+    resetTimeout.current = setTimeout(() => {
+      clicks.current = 0;
+      setVisibleRings(0);
+    }, 1400);
 
     if (clicks.current >= 5) {
       clicks.current = 0;
       setParticles(makeParticles());
       setCelebrating(true);
       setCelebrateKey(k => k + 1);
+      setChargeKey(0);
       setShowMsg(true);
-      setTimeout(() => setCelebrating(false), 900);
+      setVisibleRings(4);
+      setTimeout(() => setCelebrating(false), 950);
       setTimeout(() => {
         setShowMsg(false);
         setParticles([]);
-      }, 2600);
+        setVisibleRings(0);
+      }, 2800);
     } else {
-      // Each pre-celebration click: a quick charge wiggle
-      setWiggleKey(k => k + 1);
+      setVisibleRings(clicks.current);
+      setChargeKey(k => k + 1);
     }
   }, [celebrating]);
 
-  // Pre-compute particle geometry once per burst (memoized per particles array identity)
+  // Ring dimensions — slightly larger than avatar
+  const ringSize = size + 32;
+  const dotSize = 7;
+  const dotHalf = dotSize / 2;
+
   const particleElements = useMemo(() => particles.map(p => {
     const rad = (p.angle * Math.PI) / 180;
     const tx = Math.cos(rad) * p.distance;
     const ty = Math.sin(rad) * p.distance;
-    const borderRadius = p.shape === 'circle' ? '50%' : p.shape === 'diamond' ? '2px' : '2px';
+    const borderRadius = p.shape === 'circle' ? '50%' : '2px';
     const extraTransform = p.shape === 'diamond' ? 'rotate(45deg)' : '';
 
     return (
@@ -108,14 +126,79 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   }), [particles]);
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block', userSelect: 'none' }}>
+    <div style={{ position: 'relative', display: 'inline-block', userSelect: 'none', perspective: '520px' }}>
 
-      {/* Confetti burst — rendered behind the avatar ring */}
+      {/* Orbital rings — appear one per charge click, each in a different 3D plane */}
+      {RING_CONFIGS.map((ring, i) => {
+        if (i >= visibleRings) return null;
+        // Orbit faster during celebration
+        const orbitDuration = celebrating ? ring.duration * 0.28 : ring.duration;
+
+        return (
+          // Outer div: sets the 3D orbital plane (static tilt, no animation conflict)
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              width: ringSize,
+              height: ringSize,
+              marginLeft: -ringSize / 2,
+              marginTop: -ringSize / 2,
+              transform: `rotateX(${ring.rotateX}deg) rotateY(${ring.rotateY}deg)`,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          >
+            {/* Inner div: handles fade-in entrance — isolated from the plane transform */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              animation: `ringAppear 0.5s ${i * 70}ms cubic-bezier(0.34, 1.56, 0.64, 1) both`,
+            }}>
+              {/* The elliptical ring border */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: `1.5px solid ${ring.color}`,
+                opacity: celebrating ? 0.85 : 0.5,
+                boxShadow: celebrating
+                  ? `0 0 14px ${ring.color}90, 0 0 5px ${ring.color}70`
+                  : `0 0 7px ${ring.color}50`,
+                transition: 'opacity 0.3s, box-shadow 0.3s',
+              }} />
+
+              {/* Glowing dot that orbits along the ring */}
+              {/* transform-origin points at the ring center from the dot's frame */}
+              <div
+                key={celebrating ? `fast-${i}` : `normal-${i}`}
+                style={{
+                  position: 'absolute',
+                  top: -dotHalf,
+                  left: '50%',
+                  marginLeft: -dotHalf,
+                  width: dotSize,
+                  height: dotSize,
+                  borderRadius: '50%',
+                  background: ring.color,
+                  boxShadow: `0 0 10px ${ring.color}, 0 0 4px ${ring.color}`,
+                  transformOrigin: `${dotHalf}px ${ringSize / 2 + dotHalf}px`,
+                  animation: `dotOrbit ${orbitDuration}s linear infinite`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Confetti burst */}
       {particleElements}
 
-      {/* Gradient ring + photo */}
+      {/* Avatar gradient ring + photo */}
       <div
-        key={`spin-${celebrateKey}`}
+        key={`celebrate-${celebrateKey}`}
         onClick={handleClick}
         style={{
           position: 'relative',
@@ -128,31 +211,18 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
             : 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
           backgroundSize: celebrating ? '300% 300%' : '100% 100%',
           boxShadow: celebrating
-            ? '0 0 50px rgba(127,176,105,0.5), 0 0 90px rgba(255,138,80,0.3)'
-            : '0 0 40px rgba(var(--color-primary-rgb, 127, 176, 105), 0.25), 0 0 80px rgba(var(--color-primary-rgb, 127, 176, 105), 0.1)',
+            ? '0 0 50px rgba(127,176,105,0.55), 0 0 90px rgba(255,138,80,0.3)'
+            : visibleRings > 0
+              ? '0 0 36px rgba(127,176,105,0.40), 0 0 72px rgba(127,176,105,0.16)'
+              : '0 0 40px rgba(var(--color-primary-rgb, 127, 176, 105), 0.25), 0 0 80px rgba(var(--color-primary-rgb, 127, 176, 105), 0.1)',
           cursor: 'pointer',
+          // Celebration: 3D coin-flip on Y axis. Charge: 3D tilt (not flat wiggle)
           animation: celebrating
-            ? 'avatarCelebrate 0.85s ease forwards'
-            : wiggleKey > 0 ? `avatarCharge 0.36s ease ${wiggleKey}` : undefined,
+            ? 'avatarFlip 0.92s ease forwards'
+            : chargeKey > 0 ? `avatarTilt 0.40s ease ${chargeKey}` : undefined,
           zIndex: 1,
         }}
       >
-        {/* Charge glow ring — grows per click count */}
-        {wiggleKey > 0 && !celebrating && (
-          <div
-            key={wiggleKey}
-            style={{
-              position: 'absolute',
-              inset: -6,
-              borderRadius: '50%',
-              border: '2px solid var(--color-secondary)',
-              opacity: 0,
-              animation: 'chargeRing 0.36s ease forwards',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-
         <div
           style={{
             position: 'relative',
@@ -200,33 +270,34 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       )}
 
       <style>{`
-        /* Spring-loaded elastic single rotation with wind-up */
-        @keyframes avatarCelebrate {
-          0%   { transform: scale(1)    rotate(0deg);   }
-          14%  { transform: scale(1.24) rotate(-6deg);  }
-          68%  { transform: scale(1.16) rotate(370deg); }
-          82%  { transform: scale(1.07) rotate(353deg); }
-          92%  { transform: scale(1.02) rotate(362deg); }
-          100% { transform: scale(1)    rotate(360deg); }
+        /* 3D Y-axis coin-flip — wind-up then smooth landing */
+        @keyframes avatarFlip {
+          0%   { transform: perspective(520px) rotateY(0deg)   scale(1);    }
+          12%  { transform: perspective(520px) rotateY(-22deg) scale(1.20); }
+          65%  { transform: perspective(520px) rotateY(192deg) scale(1.10); }
+          100% { transform: perspective(520px) rotateY(360deg) scale(1);    }
         }
 
-        /* Quick charge shake — tells the user "keep going" */
-        @keyframes avatarCharge {
-          0%, 100% { transform: rotate(0deg)  scale(1);    }
-          20%      { transform: rotate(-10deg) scale(1.07); }
-          45%      { transform: rotate(7deg)   scale(1.05); }
-          65%      { transform: rotate(-4deg)  scale(1.02); }
-          82%      { transform: rotate(2deg);               }
+        /* 3D tilt on each charge click — feels like it's about to flip */
+        @keyframes avatarTilt {
+          0%   { transform: perspective(520px) rotateY(0deg)   scale(1);    }
+          35%  { transform: perspective(520px) rotateY(-28deg) scale(1.08); }
+          100% { transform: perspective(520px) rotateY(0deg)   scale(1);    }
         }
 
-        /* Outer ring pulse — orange flash on each charge click */
-        @keyframes chargeRing {
-          0%   { opacity: 0.9; transform: scale(0.92); }
-          60%  { opacity: 0.5; transform: scale(1.08); }
-          100% { opacity: 0;   transform: scale(1.18); }
+        /* Orbiting dot rotates around the ring center */
+        @keyframes dotOrbit {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
         }
 
-        /* Confetti particles — fly outward via CSS custom properties */
+        /* Ring entrance — fade + slight scale pop, no transform conflict with parent tilt */
+        @keyframes ringAppear {
+          from { opacity: 0; transform: scale(0.55); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* Confetti particles fly outward via CSS custom properties */
         @keyframes particleFly {
           0%   {
             opacity: 1;
@@ -241,7 +312,7 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
           }
         }
 
-        /* Tooltip — spring bounce in */
+        /* Tooltip spring bounce in */
         @keyframes tooltipBounce {
           from { opacity: 0; transform: translateX(-50%) scale(0.6) translateY(6px); }
           to   { opacity: 1; transform: translateX(-50%) scale(1)   translateY(0);   }
