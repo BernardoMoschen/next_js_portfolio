@@ -4,9 +4,11 @@
 :root,
 [data-theme="dark"] {
   --color-primary: #7fb069;
+  --color-primary-rgb: 127, 176, 105;
   --color-primary-light: #a8d084;
   --color-primary-dark: #5a8049;
   --color-secondary: #ff8a50;
+  --color-secondary-rgb: 255, 138, 80;
   --color-secondary-light: #ffaa7a;
   --color-secondary-dark: #cc5722;
   --color-bg: #0a0a0a;
@@ -27,69 +29,98 @@
 }
 
 [data-theme="light"] {
-  --color-primary: #2d6a4f;
-  --color-primary-light: #40916c;
-  --color-primary-dark: #1b4332;
-  --color-secondary: #c44536;
-  --color-secondary-light: #e76f51;
-  --color-secondary-dark: #8b2f1f;
-  --color-bg: #faf9f6;
-  --color-bg-elevated: #ffffff;
-  --color-bg-glass: rgba(255, 255, 255, 0.75);
-  --color-text: #1a1a2e;
-  --color-text-secondary: #4a4a5a;
-  --color-text-muted: #8a8a9a;
-  --color-border: rgba(0, 0, 0, 0.06);
-  --color-border-hover: rgba(0, 0, 0, 0.12);
-  --color-success: #116329;
-  --color-warning: #9a6700;
-  --color-error: #a40e26;
-  --color-info: #0550ae;
-  --shadow-glow: 0 0 80px rgba(45, 106, 79, 0.08);
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  /* Green keeps its richness on warm backgrounds */
+  --color-primary: #0d7a5f;
+  --color-primary-rgb: 13, 122, 95;
+  --color-primary-light: #10b285;
+  --color-primary-dark: #095c47;
+  /* Orange deepened slightly for better contrast on warm bg */
+  --color-secondary: #c9530a;
+  --color-secondary-rgb: 201, 83, 10;
+  --color-secondary-light: #e07235;
+  --color-secondary-dark: #9b3e06;
+  /* Warm parchment — the decisive call. Green + orange are earth tones;
+     they need a warm base, not cold blue-gray. */
+  --color-bg: #e8ddd0;
+  --color-bg-elevated: #f2ebe0;
+  --color-bg-glass: rgba(212, 198, 178, 0.93);
+  /* Warm text: dark amber-brown, not pure black */
+  --color-text: #1a1208;
+  --color-text-secondary: #4a3e2d;
+  --color-text-muted: #5a4c3c;
+  /* Warm borders with amber undertone */
+  --color-border: rgba(90, 60, 20, 0.15);
+  --color-border-hover: rgba(90, 60, 20, 0.28);
+  --color-success: #16a34a;
+  --color-warning: #92400e;
+  --color-error: #b91c1c;
+  --color-info: #1d4ed8;
+  --shadow-glow: 0 0 80px rgba(13, 122, 95, 0.15);
+  /* Warm shadows — brown-tinted, not black */
+  --shadow-card: 0 4px 20px rgba(40, 24, 8, 0.13), 0 1px 4px rgba(40, 24, 8, 0.07);
   --grain-opacity: 0.025;
 }
 
-/* Light mode gradient background — warm and subtle */
+/* Light mode gradient — warm green and amber glows on parchment */
 [data-theme="light"] body::before {
   background:
-    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(45, 106, 79, 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 50% at 80% 70%, rgba(196, 69, 54, 0.03) 0%, transparent 60%),
-    radial-gradient(ellipse 90% 80% at 50% 50%, rgba(45, 106, 79, 0.02) 0%, transparent 70%);
+    radial-gradient(ellipse 70% 55% at 15% 25%, rgba(13, 122, 95, 0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 50% at 85% 75%, rgba(201, 83, 10, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, rgba(13, 122, 95, 0.06) 0%, transparent 70%);
   animation: none;
 }
 
-/* Light mode glass panels — cleaner, crisper */
+/* Light mode glass — warm amber-tinted cards, clearly lifted above parchment */
 [data-theme="light"] .glass {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: rgba(238, 228, 212, 0.95);
+  border-color: rgba(90, 60, 20, 0.16);
+  box-shadow: 0 4px 18px rgba(40, 24, 8, 0.14), 0 1px 4px rgba(40, 24, 8, 0.08);
 }
-[data-theme="light"] .glass:hover { border-color: rgba(0, 0, 0, 0.1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+[data-theme="light"] .glass:hover {
+  border-color: rgba(90, 60, 20, 0.28);
+  box-shadow: 0 8px 30px rgba(40, 24, 8, 0.18);
+}
 [data-theme="light"] .glass-subtle {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.05);
+  background: rgba(235, 224, 208, 0.80);
+  border-color: rgba(90, 60, 20, 0.10);
 }
 
-/* Light mode buttons — higher contrast */
+/* Light mode buttons */
 [data-theme="light"] .btn-primary {
-  background: linear-gradient(135deg, #2d6a4f 0%, #c44536 100%);
-  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.25);
+  background: linear-gradient(135deg, #0d7a5f 0%, #c9530a 100%);
+  box-shadow: 0 2px 12px rgba(13, 122, 95, 0.35);
 }
-[data-theme="light"] .btn-primary:hover { box-shadow: 0 4px 16px rgba(45, 106, 79, 0.35); }
-[data-theme="light"] .btn-outline { border-color: #2d6a4f; color: #2d6a4f; }
-[data-theme="light"] .btn-outline:hover { background: rgba(45, 106, 79, 0.08); }
+[data-theme="light"] .btn-primary:hover { box-shadow: 0 4px 20px rgba(13, 122, 95, 0.45); }
+[data-theme="light"] .btn-outline { border-color: #0d7a5f; color: #0d7a5f; }
+[data-theme="light"] .btn-outline:hover { background: rgba(13, 122, 95, 0.09); }
 
-/* Light mode inputs */
+/* Light mode inputs — warm cream, same parchment family as the cards */
 [data-theme="light"] .input {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(246, 238, 224, 0.90);
+  border-color: rgba(90, 60, 20, 0.26);
+  color: #1a1208;
 }
-[data-theme="light"] .input:focus { border-color: #2d6a4f; box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1); }
+[data-theme="light"] .input::placeholder { color: #8a7a66; }
+[data-theme="light"] .input:focus { border-color: #0d7a5f; box-shadow: 0 0 0 3px rgba(13, 122, 95, 0.16); }
+
+/* Light mode tags — warm amber fill so they read as part of the palette */
+[data-theme="light"] .tag {
+  background: rgba(195, 178, 152, 0.28);
+  border-color: rgba(90, 60, 20, 0.22);
+}
+
+/* Cursor — mix-blend-mode: difference inverts oddly on warm light backgrounds */
+[data-theme="light"] .cursor-dot {
+  mix-blend-mode: normal;
+  background: var(--color-primary);
+}
+[data-theme="light"] .cursor-ring {
+  opacity: 0.55;
+}
 
 /* Light mode scrollbar */
-[data-theme="light"] ::-webkit-scrollbar-thumb { background: #2d6a4f; }
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #40916c; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #0d7a5f; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #10b285; }
 
 /* ═══════════════════════════════════════════════════════ */
 *, *::before, *::after {
@@ -210,25 +241,25 @@ a { color: inherit; text-decoration: none; }
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(127, 176, 105, 0.3);
+  box-shadow: 0 4px 14px rgba(var(--color-primary-rgb), 0.3);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(127, 176, 105, 0.4); }
-.btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(127, 176, 105, 0.2); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--color-primary-rgb), 0.4); }
+.btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.2); }
 .btn-outline {
   background: transparent;
   color: var(--color-primary);
   border: 1px solid var(--color-primary);
   backdrop-filter: blur(8px);
 }
-.btn-outline:hover { background: rgba(127, 176, 105, 0.1); transform: translateY(-2px); }
-.btn-outline:active { transform: translateY(0); background: rgba(127, 176, 105, 0.15); }
+.btn-outline:hover { background: rgba(var(--color-primary-rgb), 0.1); transform: translateY(-2px); }
+.btn-outline:active { transform: translateY(0); background: rgba(var(--color-primary-rgb), 0.15); }
 .btn-ghost {
   background: transparent;
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
 }
 .btn-ghost:hover { color: var(--color-primary); border-color: var(--color-primary); }
-.btn-ghost:active { background: rgba(127, 176, 105, 0.08); }
+.btn-ghost:active { background: rgba(var(--color-primary-rgb), 0.08); }
 
 /* ═══ THEME TOGGLE ═══ */
 .theme-toggle {
@@ -335,7 +366,7 @@ a { color: inherit; text-decoration: none; }
   transition: border-color 0.3s ease, box-shadow 0.3s ease; resize: vertical;
 }
 .input::placeholder { color: var(--color-text-muted); }
-.input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(127,176,105,0.15); }
+.input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15); }
 .input-label {
   display: block; margin-bottom: 6px; font-family: var(--font-mono), monospace;
   font-size: 0.75rem; font-weight: 500; color: var(--color-text-secondary);
@@ -368,7 +399,7 @@ a { color: inherit; text-decoration: none; }
 .btn:focus-visible, .theme-toggle:focus-visible, .tag:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(127, 176, 105, 0.2);
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
 }
 .input:focus-visible {
   outline: none;

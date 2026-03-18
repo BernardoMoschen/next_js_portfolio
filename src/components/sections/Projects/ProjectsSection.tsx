@@ -9,12 +9,7 @@ import SectionAnchor from '../../utils/SectionAnchor';
 import ProjectPreview from './ProjectPreview';
 import { useThemeMode } from '../../theme/ThemeContext';
 import { useI18n } from '../../../i18n';
-
-const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-    completed: { label: 'Completed', color: '#22c55e', bg: 'rgba(34,197,94,0.15)' },
-    wip: { label: 'In Progress', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
-    planning: { label: 'Coming Soon', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
-};
+import { statusMap } from '../../../constants/projectConstants';
 
 type ProjectFilter = 'all' | 'professional' | 'personal';
 
@@ -26,6 +21,19 @@ const ProjectsSection: React.FC = () => {
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
     const [filter, setFilter] = useState<ProjectFilter>('all');
+    const filterOptions: ProjectFilter[] = ['all', 'professional', 'personal'];
+
+    const handleFilterKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
+        let next = currentIndex;
+        if (e.key === 'ArrowRight') next = (currentIndex + 1) % filterOptions.length;
+        else if (e.key === 'ArrowLeft') next = (currentIndex - 1 + filterOptions.length) % filterOptions.length;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = filterOptions.length - 1;
+        else return;
+        e.preventDefault();
+        setFilter(filterOptions[next]);
+        (e.currentTarget.parentElement?.children[next] as HTMLElement)?.focus();
+    };
 
     const filtered = filter === 'all' ? projects : projects.filter(p => p.type === filter);
     const featuredProjects = filtered.filter(p => p.featured);
@@ -194,12 +202,20 @@ const ProjectsSection: React.FC = () => {
 
             {/* Filter tabs */}
             <AnimateOnScroll delay={0.15}>
-                <div className="section-inner" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
-                    {(['all', 'professional', 'personal'] as ProjectFilter[]).map((f) => (
+                <div
+                    role="tablist"
+                    aria-label="Filter projects by type"
+                    className="section-inner"
+                    style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40 }}
+                >
+                    {filterOptions.map((f, i) => (
                         <button
                             key={f}
+                            role="tab"
+                            aria-selected={filter === f}
+                            tabIndex={filter === f ? 0 : -1}
                             onClick={() => setFilter(f)}
-                            aria-pressed={filter === f}
+                            onKeyDown={(e) => handleFilterKeyDown(e, i)}
                             className={filter === f ? 'tag tag-primary filter-pill-active' : 'tag'}
                             style={{
                                 cursor: 'pointer',

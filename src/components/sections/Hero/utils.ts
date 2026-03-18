@@ -18,7 +18,7 @@ export const PERSONAL_INFO = {
     name: 'Bernardo Moschen',
     title: 'Full Stack Engineer',
     description: `I've shipped products across 3 countries — from Brazilian edtech serving thousands of students to Canadian mining infrastructure processing real-time sensor data. I build the systems that make businesses actually work, mostly with TypeScript, React, and Node.js.`,
-    profileImage: '/profile-photo.jpeg',
+    profileImage: '/profile-photo.webp',
     initials: 'BM',
     skills: [
         'React', 'Node.js', 'TypeScript', 'Material UI',

@@ -18,6 +18,19 @@ export async function generateMetadata(
     title: project.title,
     description: project.description,
     alternates: { canonical: `${siteConfig.url}/projects/${project.slug}` },
+    openGraph: {
+      title: project.title,
+      description: project.description,
+      type: 'article',
+      url: `${siteConfig.url}/projects/${project.slug}`,
+      images: [{ url: `${siteConfig.url}/og?slug=${project.slug}`, width: 1200, height: 630, alt: project.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: project.title,
+      description: project.description,
+      images: [`${siteConfig.url}/og?slug=${project.slug}`],
+    },
   };
 }
 

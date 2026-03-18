@@ -8,6 +8,8 @@ const COUNT = 3000; // Reduced from 5000 for performance
 const GLOBE_R = 2.0;
 const PRIMARY = '#7fb069';
 const SECONDARY = '#ff8a50';
+const LIGHT_PRIMARY = '#0d7a5f';
+const LIGHT_SECONDARY = '#c9530a';
 
 function makeGlobe(buf: Float32Array) {
     for (let i = 0; i < COUNT; i++) {
@@ -204,7 +206,7 @@ function getSectionShape(sections: { hero: number; about: number; projects: numb
 
 const ParticleChoreo: React.FC = () => {
     const ref = useRef<THREE.Points>(null);
-    const prevState = useRef({ fromShape: -1, toShape: -1, blend: -1 });
+    const prevState = useRef({ fromShape: -1, toShape: -1, blend: -1, isLight: false });
     const prevProgress = useRef(0);
     const smoothVelocity = useRef(0);
 
@@ -263,6 +265,8 @@ const ParticleChoreo: React.FC = () => {
         const positions = ref.current.geometry.attributes.position.array as Float32Array;
         const colors = ref.current.geometry.attributes.color.array as Float32Array;
 
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
         // Track scroll velocity for reactive wobble
         const rawVelocity = Math.abs(p - prevProgress.current);
         prevProgress.current = p;
@@ -276,10 +280,15 @@ const ParticleChoreo: React.FC = () => {
         const to = shapes[toShape];
         const { pColor, sColor, tmp } = colorCache;
 
-        // Only update colors when shape state changes meaningfully
+        // Sync colorCache with current theme
+        pColor.set(isLight ? LIGHT_PRIMARY : PRIMARY);
+        sColor.set(isLight ? LIGHT_SECONDARY : SECONDARY);
+
+        // Only update colors when shape state or theme changes meaningfully
         const shapeChanged = fromShape !== prevState.current.fromShape ||
             toShape !== prevState.current.toShape ||
-            Math.abs(blend - prevState.current.blend) > 0.02;
+            Math.abs(blend - prevState.current.blend) > 0.02 ||
+            isLight !== prevState.current.isLight;
 
         // Update positions
         const wobble = (0.03 + blend * 0.05) * wobbleMultiplier;
@@ -311,19 +320,21 @@ const ParticleChoreo: React.FC = () => {
                 colors[i3 + 2] = tmp.b;
             }
             ref.current.geometry.attributes.color.needsUpdate = true;
-            prevState.current = { fromShape, toShape, blend };
+            prevState.current = { fromShape, toShape, blend, isLight };
         }
 
         ref.current.geometry.attributes.position.needsUpdate = true;
 
         const mat = ref.current.material as THREE.PointsMaterial;
         const isEnvelope = toShape === 4 || fromShape === 4;
+        const baseOpacity = isLight ? 0.80 : 0.50;
+        const peakOpacity = isLight ? 0.95 : 0.70;
         if (isEnvelope) {
             const envelopeBlend = toShape === 4 ? blend : (1 - blend);
-            mat.opacity = lerp(0.5, 0.7, envelopeBlend);
+            mat.opacity = lerp(baseOpacity, peakOpacity, envelopeBlend);
             mat.size = lerp(0.015, 0.022, envelopeBlend);
         } else {
-            mat.opacity = blend > 0 ? lerp(0.5, 0.35, blend) : 0.5;
+            mat.opacity = blend > 0 ? lerp(baseOpacity, baseOpacity * 0.7, blend) : baseOpacity;
             mat.size = blend > 0 ? lerp(0.015, 0.018, blend) : 0.015;
         }
     });

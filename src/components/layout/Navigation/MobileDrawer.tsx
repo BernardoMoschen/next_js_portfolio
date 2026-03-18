@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useCallback } from 'react';
+import { HiDownload } from 'react-icons/hi';
 import { SoundToggle } from '../../audio';
 import LanguageSwitcher from '../LanguageSwitcher';
+import { useI18n } from '../../../i18n';
 
 interface MenuItem {
     label: string;
@@ -24,6 +26,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
 }) => {
     const drawerRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const { t } = useI18n();
 
     // Prevent body scroll when drawer is open
     useEffect(() => {
@@ -284,6 +287,32 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
                             </button>
                         );
                     })}
+                    <a
+                        href="/resume.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            width: '100%',
+                            padding: '12px 16px',
+                            marginTop: 8,
+                            borderRadius: 8,
+                            border: '1px solid var(--color-primary)',
+                            color: 'var(--color-primary)',
+                            fontFamily: '"JetBrains Mono", monospace',
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            background: 'rgba(var(--color-primary-rgb, 99,102,241), 0.07)',
+                        }}
+                    >
+                        <HiDownload size={16} />
+                        {t.nav.resume}
+                    </a>
+
                     <div style={{
                         marginTop: 16,
                         paddingTop: 16,

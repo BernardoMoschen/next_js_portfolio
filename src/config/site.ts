@@ -13,7 +13,7 @@ export const siteConfig = {
   description: 'Full-Stack engineer specializing in modern web technologies',
   keywords: ['Full-Stack engineer', 'React', 'TypeScript', 'Node.js', 'Web Development'],
 
-  profileImage: '/profile-photo.jpeg',
+  profileImage: '/profile-photo.webp',
   favicon: '/favicon.svg',
 
   securityContact: 'bernardomoschen.dev@gmail.com',
