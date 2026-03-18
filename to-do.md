@@ -4,7 +4,7 @@
 - [x] Connect ContactForm to actually send something
 - [x] Enhance performance (migrated Astro → Next.js)
 - [ ] Improve white/light theme colors
-- [ ] Unify and centralize SSOT for constant data
+- [x] Unify and centralize SSOT for constant data
 
 # Ideas
 
@@ -49,14 +49,14 @@
 - [ ] **Audit color contrast** — Run Lighthouse or axe DevTools. The orange secondary color on
       dark backgrounds may not meet WCAG AA (4.5:1 for body text, 3:1 for large text).
 
-- [ ] **Add `aria-live` to loading screen** — Screen readers don't announce the state change
-      when the loading curtain lifts. Wrap the status in `<div aria-live="polite">`.
+- [x] **Add `aria-live` to loading screen** — Added `role="status"` and `aria-live="polite"`
+      to `LoadingScreen.tsx`.
 
-- [ ] **Keyboard navigation for project filter tabs** — The All/Professional/Personal tabs
-      should support arrow key navigation (ARIA `role="tablist"` + `role="tab"` pattern).
+- [x] **Keyboard navigation for project filter tabs** — Upgraded to full ARIA `role="tablist"`
+      / `role="tab"` pattern with arrow-key, Home, and End navigation in `ProjectsSection.tsx`.
 
-- [ ] **Audit all image `alt` text** — Profile photo and project images need descriptive `alt`
-      attributes, not just filenames or empty strings.
+- [x] **Audit all image `alt` text** — Improved alt text on project screenshot image and
+      certification logos (`ProjectDetail.tsx`, `CertificationCard.tsx`).
 
 - [ ] **Test with screen reader** — Navigate the full page with VoiceOver (Mac) or NVDA
       (Windows) to catch unlabelled interactive elements or confusing reading order.
@@ -75,8 +75,8 @@
 - [x] **Profile image format mismatch** — Updated `site.ts` and `Hero/utils.ts` to `.webp`,
       matching the existing `<link rel=preload>` in `layout.tsx`.
 
-- [ ] **3D scene has no loading state** — WebGL init takes visible time with no user feedback.
-      Add a skeleton or loading message while the canvas initializes.
+- [x] **3D scene has no loading state** — Added `glReady` state to `Scene3D.tsx`; `CSSGlobe`
+      shown during `pending` mode and while WebGL initializes, then fades out once canvas is ready.
 
 ## 🟢 Accessibility (new)
 

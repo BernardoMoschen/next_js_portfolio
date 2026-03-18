@@ -6,6 +6,18 @@ import BrandLogo from './BrandLogo';
 import { menuItems, scrollToSection } from './utils';
 import { useI18n } from '../../../i18n';
 
+function useIsLight() {
+    const [isLight, setIsLight] = useState(false);
+    useEffect(() => {
+        const check = () => setIsLight(document.documentElement.getAttribute('data-theme') === 'light');
+        check();
+        const observer = new MutationObserver(check);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
+    }, []);
+    return isLight;
+}
+
 function useIsMobile(breakpoint = 768) {
     const [isMobile, setIsMobile] = useState(false);
 
@@ -22,6 +34,7 @@ function useIsMobile(breakpoint = 768) {
 
 const NavigationContainer: React.FC = () => {
     const isMobile = useIsMobile();
+    const isLight = useIsLight();
     const { t } = useI18n();
 
     const navLabelMap: Record<string, string> = {
@@ -86,13 +99,19 @@ const NavigationContainer: React.FC = () => {
                     left: 0,
                     right: 0,
                     zIndex: 1100,
-                    backgroundColor: scrolled ? 'var(--color-bg-glass)' : 'transparent',
-                    backdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
-                    WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(1.2)' : 'none',
+                    backgroundColor: scrolled
+                        ? 'var(--color-bg-glass)'
+                        : isLight ? 'rgba(232, 220, 202, 0.60)' : 'transparent',
+                    backdropFilter: (scrolled || isLight) ? 'blur(20px) saturate(1.2)' : 'none',
+                    WebkitBackdropFilter: (scrolled || isLight) ? 'blur(20px) saturate(1.2)' : 'none',
                     boxShadow: scrolled
-                        ? '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
+                        ? isLight
+                            ? '0 4px 24px rgba(40, 24, 8, 0.18), 0 2px 8px rgba(40, 24, 8, 0.10)'
+                            : '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)'
                         : 'none',
-                    borderBottom: scrolled ? '1px solid var(--color-border)' : '1px solid transparent',
+                    borderBottom: scrolled
+                        ? '1px solid var(--color-border)'
+                        : isLight ? '1px solid rgba(90, 60, 20, 0.12)' : '1px solid transparent',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             >

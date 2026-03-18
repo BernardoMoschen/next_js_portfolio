@@ -43,11 +43,11 @@
      they need a warm base, not cold blue-gray. */
   --color-bg: #e8ddd0;
   --color-bg-elevated: #f2ebe0;
-  --color-bg-glass: rgba(255, 252, 246, 0.94);
+  --color-bg-glass: rgba(212, 198, 178, 0.93);
   /* Warm text: dark amber-brown, not pure black */
   --color-text: #1a1208;
   --color-text-secondary: #4a3e2d;
-  --color-text-muted: #8a7a66;
+  --color-text-muted: #5a4c3c;
   /* Warm borders with amber undertone */
   --color-border: rgba(90, 60, 20, 0.15);
   --color-border-hover: rgba(90, 60, 20, 0.28);
@@ -70,19 +70,19 @@
   animation: none;
 }
 
-/* Light mode glass — warm white cards that lift off the parchment */
+/* Light mode glass — warm amber-tinted cards, clearly lifted above parchment */
 [data-theme="light"] .glass {
-  background: rgba(255, 252, 246, 0.96);
-  border-color: rgba(90, 60, 20, 0.13);
-  box-shadow: 0 4px 18px rgba(40, 24, 8, 0.12), 0 1px 4px rgba(40, 24, 8, 0.07);
+  background: rgba(238, 228, 212, 0.95);
+  border-color: rgba(90, 60, 20, 0.16);
+  box-shadow: 0 4px 18px rgba(40, 24, 8, 0.14), 0 1px 4px rgba(40, 24, 8, 0.08);
 }
 [data-theme="light"] .glass:hover {
-  border-color: rgba(90, 60, 20, 0.24);
-  box-shadow: 0 8px 30px rgba(40, 24, 8, 0.16);
+  border-color: rgba(90, 60, 20, 0.28);
+  box-shadow: 0 8px 30px rgba(40, 24, 8, 0.18);
 }
 [data-theme="light"] .glass-subtle {
-  background: rgba(255, 252, 246, 0.82);
-  border-color: rgba(90, 60, 20, 0.09);
+  background: rgba(235, 224, 208, 0.80);
+  border-color: rgba(90, 60, 20, 0.10);
 }
 
 /* Light mode buttons */
@@ -94,13 +94,29 @@
 [data-theme="light"] .btn-outline { border-color: #0d7a5f; color: #0d7a5f; }
 [data-theme="light"] .btn-outline:hover { background: rgba(13, 122, 95, 0.09); }
 
-/* Light mode inputs — warm white, clearly outlined */
+/* Light mode inputs — warm cream, same parchment family as the cards */
 [data-theme="light"] .input {
-  background: rgba(255, 252, 246, 0.98);
-  border-color: rgba(90, 60, 20, 0.22);
+  background: rgba(246, 238, 224, 0.90);
+  border-color: rgba(90, 60, 20, 0.26);
   color: #1a1208;
 }
-[data-theme="light"] .input:focus { border-color: #0d7a5f; box-shadow: 0 0 0 3px rgba(13, 122, 95, 0.14); }
+[data-theme="light"] .input::placeholder { color: #8a7a66; }
+[data-theme="light"] .input:focus { border-color: #0d7a5f; box-shadow: 0 0 0 3px rgba(13, 122, 95, 0.16); }
+
+/* Light mode tags — warm amber fill so they read as part of the palette */
+[data-theme="light"] .tag {
+  background: rgba(195, 178, 152, 0.28);
+  border-color: rgba(90, 60, 20, 0.22);
+}
+
+/* Cursor — mix-blend-mode: difference inverts oddly on warm light backgrounds */
+[data-theme="light"] .cursor-dot {
+  mix-blend-mode: normal;
+  background: var(--color-primary);
+}
+[data-theme="light"] .cursor-ring {
+  opacity: 0.55;
+}
 
 /* Light mode scrollbar */
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #0d7a5f; }

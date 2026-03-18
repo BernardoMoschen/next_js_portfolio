@@ -31,7 +31,15 @@ function createArc(a: THREE.Vector3, b: THREE.Vector3, alt: number) {
 // ─── Constants ──────────────────────────────────────────────────
 const PRIMARY = '#7fb069';
 const SECONDARY = '#ff8a50';
+// Darker, higher-contrast palette for light/warm backgrounds
+const LIGHT_PRIMARY = '#0d7a5f';
+const LIGHT_SECONDARY = '#c9530a';
 const GLOBE_R = 2.0;
+
+function getThemeColors() {
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    return { isLight: light, p: light ? LIGHT_PRIMARY : PRIMARY, s: light ? LIGHT_SECONDARY : SECONDARY };
+}
 
 const locations = [
     { lat: -30.03, lng: -51.23, home: true },
@@ -76,7 +84,10 @@ const GlobeWireframe: React.FC = () => {
     useFrame(() => {
         if (!ref.current) return;
         const fade = Math.max(0, 1 - scrollState.progress / 0.15);
-        (ref.current.material as THREE.MeshBasicMaterial).opacity = 0.04 * fade;
+        const { isLight, p } = getThemeColors();
+        const mat = ref.current.material as THREE.MeshBasicMaterial;
+        mat.opacity = (isLight ? 0.44 : 0.04) * fade;
+        mat.color.set(p);
         ref.current.visible = fade > 0.01;
     });
     return (
@@ -97,8 +108,12 @@ const GlobeAtmosphere: React.FC = () => {
         const fade = Math.max(0, 1 - scrollState.progress / 0.15);
         ref.current.visible = fade > 0.01;
         if (!ref.current.visible) return;
-        (ref.current.material as THREE.MeshBasicMaterial).opacity =
-            (0.04 + Math.sin(clock.getElapsedTime() * 0.4) * 0.015) * fade;
+        const { isLight, p } = getThemeColors();
+        const base = isLight ? 0.24 : 0.04;
+        const swing = isLight ? 0.06 : 0.015;
+        const mat = ref.current.material as THREE.MeshBasicMaterial;
+        mat.opacity = (base + Math.sin(clock.getElapsedTime() * 0.4) * swing) * fade;
+        mat.color.set(p);
     });
     return (
         <mesh ref={ref}>
@@ -129,6 +144,8 @@ const TravelingLight: React.FC<{ arc: THREE.CubicBezierCurve3; color: string; de
             if (visible) {
                 glowRef.current.position.copy(arc.getPoint(prog));
                 glowRef.current.scale.setScalar(1 + Math.sin(t.current * 8) * 0.3);
+                const { isLight } = getThemeColors();
+                (glowRef.current.material as THREE.MeshStandardMaterial).opacity = isLight ? 0.55 : 0.15;
             }
         }
     });
@@ -176,6 +193,11 @@ const Arcs: React.FC = () => {
         if (!groupRef.current) return;
         const fade = Math.max(0, 1 - scrollState.progress / 0.18);
         groupRef.current.visible = fade > 0.01;
+        if (!groupRef.current.visible) return;
+        const { isLight } = getThemeColors();
+        arcData.forEach(d => {
+            (d.line.material as THREE.LineBasicMaterial).opacity = (isLight ? 0.85 : 0.45) * fade;
+        });
     });
 
     return (
@@ -198,6 +220,8 @@ const PulsingMarker: React.FC<{ position: THREE.Vector3; color: string; size: nu
     useFrame(({ clock }) => {
         if (ref.current) {
             ref.current.scale.setScalar(1 + Math.sin(clock.getElapsedTime() * 2.5) * 0.3);
+            const { isLight } = getThemeColors();
+            (ref.current.material as THREE.MeshStandardMaterial).opacity = isLight ? 0.70 : 0.30;
         }
     });
     return (
@@ -305,9 +329,13 @@ const FloatingShape: React.FC<{ data: ShapeData }> = ({ data }) => {
         ref.current.visible = opacity > 0.01;
         if (!ref.current.visible) return;
 
+        const { isLight, p: pCol, s: sCol } = getThemeColors();
+        const col = isLight ? (data.color === PRIMARY ? pCol : sCol) : data.color;
         const mat = ref.current.material as THREE.MeshStandardMaterial;
-        mat.opacity = opacity * 0.12;
-        mat.emissiveIntensity = opacity * 0.3;
+        mat.opacity = opacity * (isLight ? 0.55 : 0.12);
+        mat.emissiveIntensity = opacity * (isLight ? 0.04 : 0.30);
+        mat.color.set(col);
+        mat.emissive.set(col);
 
         ref.current.position.x = basePos.x + Math.sin(t * data.speed + data.position[0]) * 0.3 * movementMultiplier + mouseState.x * 0.2;
         ref.current.position.y = basePos.y + Math.sin(t * data.speed * 0.7 + data.position[1]) * 0.4 * movementMultiplier + mouseState.y * 0.15;
@@ -355,7 +383,8 @@ const GridPlane: React.FC = () => {
 
         ref.current.visible = opacity > 0.01;
         if (!ref.current.visible) return;
-        (ref.current.material as THREE.Material).opacity = opacity * 0.06;
+        const { isLight } = getThemeColors();
+        (ref.current.material as THREE.Material).opacity = opacity * (isLight ? 0.32 : 0.06);
         ref.current.position.y = -3 + Math.sin(p * Math.PI) * 0.5;
     });
 
@@ -402,7 +431,10 @@ const EnergyLines: React.FC = () => {
         ref.current.visible = opacity > 0.01;
         if (!ref.current.visible) return;
 
-        (ref.current.material as THREE.PointsMaterial).opacity = opacity * 0.3;
+        const { isLight, s } = getThemeColors();
+        const eMat = ref.current.material as THREE.PointsMaterial;
+        eMat.opacity = opacity * (isLight ? 0.72 : 0.30);
+        eMat.color.set(s);
 
         frameSkip.current = (frameSkip.current + 1) % 2;
         if (frameSkip.current !== 0) return;
@@ -523,7 +555,7 @@ const CSSGlobe: React.FC<CSSGlobeProps> = ({ isLight = false }) => {
                 width: S + 120, height: S + 120,
                 borderRadius: '50%',
                 background: isLight
-                    ? `radial-gradient(circle, rgba(${pColor},0.22) 0%, rgba(${sColor},0.12) 45%, transparent 68%)`
+                    ? `radial-gradient(circle, rgba(${pColor},0.36) 0%, rgba(${sColor},0.22) 45%, transparent 68%)`
                     : `radial-gradient(circle, rgba(${pColor},0.10) 0%, rgba(${sColor},0.04) 40%, transparent 68%)`,
                 animation: 'cssGlobePulse 5s ease-in-out infinite',
             }} />
@@ -541,7 +573,7 @@ const CSSGlobe: React.FC<CSSGlobeProps> = ({ isLight = false }) => {
                     <div style={{
                         position: 'absolute', inset: 0,
                         borderRadius: '50%',
-                        border: `1.5px solid rgba(${pColor}, ${isLight ? 0.6 : 0.3})`,
+                        border: `1.5px solid rgba(${pColor}, ${isLight ? 0.80 : 0.3})`,
                     }} />
 
                     {/* Meridians */}
@@ -549,7 +581,7 @@ const CSSGlobe: React.FC<CSSGlobeProps> = ({ isLight = false }) => {
                         <div key={`m${i}`} style={{
                             position: 'absolute', inset: 0,
                             borderRadius: '50%',
-                            border: `1px solid rgba(${i === 1 ? sColor : pColor}, ${i === 0 ? (isLight ? 0.58 : 0.32) : (isLight ? 0.38 : 0.18)})`,
+                            border: `1px solid rgba(${i === 1 ? sColor : pColor}, ${i === 0 ? (isLight ? 0.78 : 0.32) : (isLight ? 0.55 : 0.18)})`,
                             transform: `rotateY(${i * (180 / meridians)}deg)`,
                         }} />
                     ))}
@@ -567,7 +599,7 @@ const CSSGlobe: React.FC<CSSGlobeProps> = ({ isLight = false }) => {
                                 left: '50%', top: '50%',
                                 marginLeft: -r, marginTop: -r,
                                 borderRadius: '50%',
-                                border: `1px solid rgba(${pColor},${isEquator ? (isLight ? 0.62 : 0.38) : (isLight ? 0.38 : 0.2)})`,
+                                border: `1px solid rgba(${pColor},${isEquator ? (isLight ? 0.80 : 0.38) : (isLight ? 0.55 : 0.2)})`,
                                 transform: `rotateX(90deg) translateY(${y}px)`,
                             }} />
                         );
