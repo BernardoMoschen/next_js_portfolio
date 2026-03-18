@@ -429,9 +429,10 @@ const EnergyLines: React.FC = () => {
 const PostProcessing: React.FC = () => {
     const { size } = useThree();
     const isMobile = size.width < 768;
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
-    // Skip postprocessing entirely on mobile for performance
-    if (isMobile) return null;
+    // Bloom is designed for dark backgrounds — skip in light mode and on mobile
+    if (isMobile || isLight) return null;
 
     return (
         <EffectComposer>
@@ -483,11 +484,17 @@ const SceneContent: React.FC = () => {
 };
 
 // ─── CSS 3D Globe (Brave / no-WebGL fallback) ───────────────────
-const CSSGlobe: React.FC = () => {
+interface CSSGlobeProps { isLight?: boolean }
+
+const CSSGlobe: React.FC<CSSGlobeProps> = ({ isLight = false }) => {
     const S = 360; // diameter px
     const R = S / 2;
     const meridians = 6;
     const latitudes = [-60, -30, 0, 30, 60];
+
+    const pColor = isLight ? '13,122,95' : '127,176,105';
+    const sColor = isLight ? '232,93,4'  : '255,138,80';
+    const dotColor = isLight ? '#e85d04' : SECONDARY;
 
     return (
         <div
@@ -510,12 +517,14 @@ const CSSGlobe: React.FC = () => {
                 }
             `}</style>
 
-            {/* Atmosphere glow — gradient only, no blur (avoids software-render cost) */}
+            {/* Atmosphere glow */}
             <div style={{
                 position: 'absolute',
                 width: S + 120, height: S + 120,
                 borderRadius: '50%',
-                background: `radial-gradient(circle, rgba(127,176,105,0.1) 0%, rgba(255,138,80,0.04) 40%, transparent 68%)`,
+                background: isLight
+                    ? `radial-gradient(circle, rgba(${pColor},0.14) 0%, rgba(${sColor},0.07) 45%, transparent 68%)`
+                    : `radial-gradient(circle, rgba(${pColor},0.10) 0%, rgba(${sColor},0.04) 40%, transparent 68%)`,
                 animation: 'cssGlobePulse 5s ease-in-out infinite',
             }} />
 
@@ -532,7 +541,7 @@ const CSSGlobe: React.FC = () => {
                     <div style={{
                         position: 'absolute', inset: 0,
                         borderRadius: '50%',
-                        border: '1px solid rgba(127, 176, 105, 0.3)',
+                        border: `1px solid rgba(${pColor}, ${isLight ? 0.45 : 0.3})`,
                     }} />
 
                     {/* Meridians */}
@@ -540,7 +549,7 @@ const CSSGlobe: React.FC = () => {
                         <div key={`m${i}`} style={{
                             position: 'absolute', inset: 0,
                             borderRadius: '50%',
-                            border: `1px solid rgba(${i === 1 ? '255,138,80' : '127,176,105'}, ${i === 0 ? 0.32 : 0.18})`,
+                            border: `1px solid rgba(${i === 1 ? sColor : pColor}, ${i === 0 ? (isLight ? 0.45 : 0.32) : (isLight ? 0.28 : 0.18)})`,
                             transform: `rotateY(${i * (180 / meridians)}deg)`,
                         }} />
                     ))}
@@ -558,20 +567,19 @@ const CSSGlobe: React.FC = () => {
                                 left: '50%', top: '50%',
                                 marginLeft: -r, marginTop: -r,
                                 borderRadius: '50%',
-                                border: `1px solid rgba(127,176,105,${isEquator ? 0.38 : 0.2})`,
-                                // Apply translateY first (before the tilt), then tilt flat
+                                border: `1px solid rgba(${pColor},${isEquator ? (isLight ? 0.5 : 0.38) : (isLight ? 0.28 : 0.2)})`,
                                 transform: `rotateX(90deg) translateY(${y}px)`,
                             }} />
                         );
                     })}
 
-                    {/* Location dot — home (Porto Alegre, roughly front-facing) */}
+                    {/* Location dot — home (Porto Alegre) */}
                     <div style={{
                         position: 'absolute',
                         width: 7, height: 7,
                         borderRadius: '50%',
-                        background: SECONDARY,
-                        boxShadow: `0 0 8px ${SECONDARY}`,
+                        background: dotColor,
+                        boxShadow: `0 0 8px ${dotColor}`,
                         left: '54%', top: '60%',
                         transform: `translateZ(${R}px)`,
                     }} />
@@ -599,12 +607,26 @@ class WebGLErrorBoundary extends React.Component<
     }
 }
 
+// ─── Theme helper ────────────────────────────────────────────────
+function useIsLight() {
+    const [isLight, setIsLight] = useState(false);
+    useEffect(() => {
+        const check = () => setIsLight(document.documentElement.getAttribute('data-theme') === 'light');
+        check();
+        const observer = new MutationObserver(check);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
+    }, []);
+    return isLight;
+}
+
 // ─── Exported Component ─────────────────────────────────────────
 type RenderMode = 'pending' | 'css-globe' | 'webgl' | 'none';
 
 const Scene3DInner: React.FC = () => {
     const [mode, setMode] = useState<RenderMode>('pending');
     const [glReady, setGlReady] = useState(false);
+    const isLight = useIsLight();
 
     useEffect(() => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -637,14 +659,14 @@ const Scene3DInner: React.FC = () => {
     }, []);
 
     if (mode === 'none') return null;
-    if (mode === 'pending' || mode === 'css-globe') return <CSSGlobe />;
+    if (mode === 'pending' || mode === 'css-globe') return <CSSGlobe isLight={isLight} />;
 
     const antialias = window.devicePixelRatio <= 1;
 
     return (
         <>
             {/* CSS globe stays visible until WebGL first frame is rendered */}
-            {!glReady && <CSSGlobe />}
+            {!glReady && <CSSGlobe isLight={isLight} />}
             <div
                 style={{
                     position: 'fixed',

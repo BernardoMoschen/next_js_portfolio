@@ -21,7 +21,7 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
         borderRadius: '50%',
         padding: 3,
         background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-        boxShadow: '0 0 40px rgba(127, 176, 105, 0.25), 0 0 80px rgba(127, 176, 105, 0.1)',
+        boxShadow: '0 0 40px rgba(var(--color-primary-rgb, 127, 176, 105), 0.25), 0 0 80px rgba(var(--color-primary-rgb, 127, 176, 105), 0.1)',
       }}
     >
       <div
