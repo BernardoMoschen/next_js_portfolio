@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import type { Experience } from '../../data/aboutData';
 import { getCategoryIcon } from '../../utils/iconMap';
 
@@ -7,9 +8,11 @@ interface ExperienceTimelineProps {
     descriptions: string[][];
     periods: string[];
     heading: string;
+    projectTitles: Record<string, string>;
+    viewProjectLabel: string;
 }
 
-const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, descriptions, periods, heading }) => {
+const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, descriptions, periods, heading, projectTitles, viewProjectLabel }) => {
     const timelineRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -232,6 +235,19 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                         color: var(--color-text-secondary);
                         font-size: 0.88rem;
                     }
+                    .timeline-project-link {
+                        display: inline-block;
+                        margin-top: 0.75rem;
+                        font-family: 'JetBrains Mono', monospace;
+                        font-size: 0.8rem;
+                        color: var(--color-secondary);
+                        text-decoration: none;
+                        opacity: 0.8;
+                        transition: opacity 0.2s;
+                    }
+                    .timeline-project-link:hover {
+                        opacity: 1;
+                    }
                 `}</style>
 
                 {experiences.map((exp, index) => (
@@ -252,6 +268,11 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                                     <li key={descIndex}>{desc}</li>
                                 ))}
                             </ul>
+                            {exp.projectSlugs?.map((slug) => projectTitles[slug] && (
+                                <Link key={slug} href={`/projects/${slug}`} className="timeline-project-link">
+                                    {'→ '}{viewProjectLabel}: {projectTitles[slug]}
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 ))}

@@ -13,6 +13,7 @@ export const en = {
     stats: { years: '5+ Years', countries: '3 Countries', remote: 'Remote-First' },
     tabs: { anyone: 'For anyone', recruiters: 'Recruiters', pms: 'Product Managers', engineers: 'Engineers' },
     experience_heading: 'Professional Experience',
+    view_project: 'View project',
     briefs: [
       {
         audience: 'For anyone',
@@ -33,25 +34,25 @@ export const en = {
     ],
     experience_descriptions: [
       [
-        'Built self-service onboarding flows (React, Recoil, Jest) that measurably reduced user drop-off rates across the telecom platform',
+        "Helped build the entire digital layer for Bermuda's first cloud-native 5G operator — onboarding, CRM, back-office automation, internal tooling",
+        'Shipped self-service onboarding flows (React, Recoil, Jest) that cut user drop-off across the platform',
         'Designed REST APIs and midtier services (Node.js, TypeScript, GraphQL, AWS) powering a CRM serving ~10K+ customers',
-        'Led development of back-office automation tools that directly boosted support team revenue by replacing manual workflows with integrated pipelines',
-        'Unified 4+ external platforms (Zapier, Webflow, Zendesk, Strapi) into a single automation layer — from ticket routing to customer onboarding',
+        'Unified 4+ external platforms (Zapier, Webflow, Zendesk, Strapi) into one automation layer — ticket routing to customer onboarding',
       ],
       [
-        'Consolidated ~20 educational institutions into one unified platform — enrollment, contracts, financing, and reporting in a single system used daily by thousands',
-        'Built the React + TypeScript frontend serving administrative staff and students across the entire institution network',
-        'Engineered C#/.NET + PostgreSQL backend handling high-volume enrollment transactions with robust data integrity',
+        "Built the unified platform for northeastern Brazil's largest educational group — 50K+ students across 5 states",
+        'Shipped the React + TypeScript frontend serving administrative staff and students across the entire institution network',
+        'Contributed to the C#/.NET + PostgreSQL backend handling high-volume enrollment transactions for 60+ year-old institution group',
       ],
       [
-        'Led development of a real-time data integration platform processing 50K+ sensor readings/day — replaced error-prone manual data entry entirely',
-        'Architected Node.js + Sequelize.js + SQL Server backend for automated merging of virtual models with physical sensor data',
-        'Shipped from Brazil as part of a fully remote international team — daily coordination across time zones with Canadian stakeholders',
+        "Led development of an internal operations platform for ArcelorMittal's largest mining subsidiary worldwide — equipment, shifts, and workforce management",
+        'Architected Node.js + Sequelize.js + SQL Server backend for real-time data ingestion and automated merging of virtual models with sensor data',
+        'Delivered fully remote from Brazil — daily coordination across time zones with Canadian engineering and operations teams',
       ],
       [
-        'Delivered features across multiple client projects simultaneously — React, Vue, PHP, NestJS, and Adonis.js depending on the engagement',
-        "Worked across 5+ database systems (MySQL, PostgreSQL, MongoDB, SQL Server) adapting to each project's architecture",
-        "Agency environment: tight deadlines, diverse codebases, rapid context-switching — built the adaptability that defined my career since",
+        'Shipped features across multiple enterprise clients at a Gartner top-ranked consultancy (35 years in market, Top 10 Employer Brazil by TIME)',
+        "Worked across 5+ database systems (MySQL, PostgreSQL, MongoDB, SQL Server) adapting to each client's architecture",
+        'React, Vue, PHP, NestJS, Adonis.js — whatever the engagement called for. Built the adaptability that shaped my career since',
       ],
     ],
     technical_categories: [

@@ -13,6 +13,7 @@ export const ptBr = {
     stats: { years: '5+ Anos', countries: '3 Países', remote: 'Remoto' },
     tabs: { anyone: 'Para todos', recruiters: 'Recrutadores', pms: 'Product Managers', engineers: 'Engenheiros' },
     experience_heading: 'Experiência Profissional',
+    view_project: 'Ver projeto',
     briefs: [
       {
         audience: 'Para todos',
@@ -33,25 +34,25 @@ export const ptBr = {
     ],
     experience_descriptions: [
       [
-        'Construí fluxos de onboarding self-service (React, Recoil, Jest) que reduziram mensuralmente o abandono de usuários na plataforma de telecom',
-        'Projetei APIs REST e serviços intermediários (Node.js, TypeScript, GraphQL, AWS) que alimentam um CRM com ~10K+ clientes',
-        'Liderei o desenvolvimento de ferramentas de automação de back-office que aumentaram diretamente a receita da equipe de suporte ao substituir fluxos manuais por pipelines integrados',
-        'Unifiquei 4+ plataformas externas (Zapier, Webflow, Zendesk, Strapi) em uma única camada de automação — do roteamento de tickets ao onboarding de clientes',
+        'Ajudei a construir a camada digital inteira da primeira operadora 5G cloud-native de Bermuda — onboarding, CRM, automação de back-office, ferramental interno',
+        'Entreguei fluxos de onboarding self-service (React, Recoil, Jest) que derrubaram o abandono de usuários na plataforma',
+        'Projetei APIs REST e serviços intermediários (Node.js, TypeScript, GraphQL, AWS) alimentando um CRM com ~10K+ clientes',
+        'Unifiquei 4+ plataformas externas (Zapier, Webflow, Zendesk, Strapi) numa camada de automação só — do roteamento de tickets ao onboarding',
       ],
       [
-        'Consolidei ~20 instituições de ensino em uma plataforma unificada — matrícula, contratos, financiamento e relatórios em um único sistema usado diariamente por milhares',
-        'Construí o frontend React + TypeScript atendendo equipes administrativas e alunos em toda a rede institucional',
-        'Desenvolvi o backend C#/.NET + PostgreSQL para lidar com transações de matrícula em alto volume com robusta integridade de dados',
+        'Construí a plataforma unificada pro maior grupo de ensino superior do Nordeste — 50K+ alunos em 5 estados',
+        'Entreguei o frontend React + TypeScript atendendo funcionários administrativos e alunos em toda a rede institucional',
+        'Contribuí pro backend C#/.NET + PostgreSQL processando matrículas em alto volume pra um grupo com 60+ anos de história',
       ],
       [
-        'Liderei o desenvolvimento de uma plataforma de integração de dados em tempo real processando 50K+ leituras de sensores/dia — substituiu completamente a entrada manual de dados propensa a erros',
-        'Arquitetei o backend Node.js + Sequelize.js + SQL Server para fusão automatizada de modelos virtuais com dados físicos de sensores',
-        'Entreguei remotamente do Brasil como parte de uma equipe internacional totalmente remota — coordenação diária entre fusos horários com stakeholders canadenses',
+        'Liderei o desenvolvimento da plataforma interna de operações da maior subsidiária de mineração da ArcelorMittal no mundo — gestão de equipamentos, turnos e força de trabalho',
+        'Arquitetei o backend Node.js + Sequelize.js + SQL Server pra ingestão de dados em tempo real e fusão automatizada de modelos virtuais com dados de sensores',
+        'Entrega 100% remota do Brasil — coordenação diária entre fusos com times de engenharia e operações canadenses',
       ],
       [
-        'Entreguei funcionalidades em múltiplos projetos clientes simultaneamente — React, Vue, PHP, NestJS e Adonis.js dependendo do engajamento',
-        'Trabalhei com 5+ sistemas de banco de dados (MySQL, PostgreSQL, MongoDB, SQL Server) adaptando-me à arquitetura de cada projeto',
-        'Ambiente de agência: prazos apertados, codebases diversas, troca de contexto rápida — construí a adaptabilidade que definiu minha carreira desde então',
+        'Entreguei features pra múltiplos clientes enterprise numa consultoria top-ranked no Gartner (35 anos de mercado, Top 10 Employer Brazil pela TIME)',
+        'Trabalhei com 5+ bancos de dados (MySQL, PostgreSQL, MongoDB, SQL Server) adaptando pra arquitetura de cada cliente',
+        'React, Vue, PHP, NestJS, Adonis.js — o que o projeto pedisse. Construí a adaptabilidade que moldou minha carreira desde então',
       ],
     ],
     technical_categories: [

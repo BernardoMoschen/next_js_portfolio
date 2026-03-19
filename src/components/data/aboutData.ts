@@ -19,6 +19,7 @@ export interface Experience {
     companyUrl: string;
     period: string;
     description?: string[];
+    projectSlugs?: string[];
     iconType: 'work';
 }
 
@@ -93,6 +94,7 @@ export const experiences: Experience[] = [
         company: 'Paradise Mobile',
         companyUrl: 'https://www.linkedin.com/company/paradise-mobile/about',
         period: '2024 - Present',
+        projectSlugs: ['telecom-backoffice'],
         iconType: 'work',
     },
     {
@@ -100,6 +102,7 @@ export const experiences: Experience[] = [
         company: 'Grupo Tiradentes',
         companyUrl: 'https://www.linkedin.com/company/grupo-tiradentes/about',
         period: '2022 - 2023',
+        projectSlugs: ['edtech-platform'],
         iconType: 'work',
     },
     {
@@ -107,6 +110,7 @@ export const experiences: Experience[] = [
         company: 'ArcelorMittal Mines Canada',
         companyUrl: 'https://www.linkedin.com/company/arcelormittal/about',
         period: '2021 - 2022',
+        projectSlugs: ['mining-data-platform'],
         iconType: 'work',
     },
     {
