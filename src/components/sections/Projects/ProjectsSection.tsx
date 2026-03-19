@@ -380,7 +380,6 @@ const ProjectsSection: React.FC = () => {
                                     data-scroll-strip=""
                                     style={{
                                         width: `min(${cardWidth}px, calc(100vw - 48px))`,
-                                        height: '78vh',
                                         minHeight: 'min(560px, 70vh)',
                                         maxHeight: 780,
                                         borderRadius: 20,
@@ -399,7 +398,7 @@ const ProjectsSection: React.FC = () => {
                                         position: 'absolute',
                                         top: -10,
                                         right: 16,
-                                        fontSize: '10rem',
+                                        fontSize: 'clamp(5rem, 20vw, 10rem)',
                                         fontWeight: 900,
                                         lineHeight: 1,
                                         color: 'var(--color-text)',
@@ -470,7 +469,7 @@ const ProjectsSection: React.FC = () => {
 
                                     {/* Title */}
                                     <h3 style={{
-                                        fontSize: '1.6rem',
+                                        fontSize: 'clamp(1.2rem, 4vw, 1.6rem)',
                                         fontWeight: 700,
                                         color: 'var(--color-text)',
                                         margin: '0 0 16px 0',
@@ -485,7 +484,7 @@ const ProjectsSection: React.FC = () => {
                                         fontSize: '0.92rem',
                                         lineHeight: 1.65,
                                         margin: '0 0 24px 0',
-                                        flex: '1 1 auto',
+                                        flexShrink: 0,
                                         overflow: 'hidden',
                                         display: '-webkit-box',
                                         WebkitLineClamp: 5,

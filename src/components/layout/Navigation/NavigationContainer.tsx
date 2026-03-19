@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-import MobileNavigation from './MobileNavigation';
+import MobileNavigation, { MobileNavigationDrawer } from './MobileNavigation';
 import DesktopNavigation from './DesktopNavigation';
 import BrandLogo from './BrandLogo';
 import { menuItems, scrollToSection } from './utils';
 import { useI18n } from '../../../i18n';
+import { useIsMobile } from '../../../hooks/useIsMobile';
 
 function useIsLight() {
     const [isLight, setIsLight] = useState(false);
@@ -16,20 +17,6 @@ function useIsLight() {
         return () => observer.disconnect();
     }, []);
     return isLight;
-}
-
-function useIsMobile(breakpoint = 768) {
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
-        const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
-        handler(mql);
-        mql.addEventListener('change', handler as (e: MediaQueryListEvent) => void);
-        return () => mql.removeEventListener('change', handler as (e: MediaQueryListEvent) => void);
-    }, [breakpoint]);
-
-    return isMobile;
 }
 
 const NavigationContainer: React.FC = () => {
@@ -137,7 +124,7 @@ const NavigationContainer: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         minHeight: isMobile ? 64 : 72,
-                        padding: '0 24px',
+                        padding: isMobile ? '0 12px' : '0 24px',
                         maxWidth: 1200,
                         margin: '0 auto',
                         width: '100%',
@@ -161,6 +148,17 @@ const NavigationContainer: React.FC = () => {
                     )}
                 </nav>
             </header>
+
+            {/* Drawer must be outside <header> to escape its backdrop-filter stacking context */}
+            {isMobile && (
+                <MobileNavigationDrawer
+                    open={mobileOpen}
+                    onToggle={() => setMobileOpen(!mobileOpen)}
+                    onMenuClick={handleMenuClick}
+                    activeSection={activeSection}
+                    menuItems={translatedMenuItems}
+                />
+            )}
         </>
     );
 };

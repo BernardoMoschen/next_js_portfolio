@@ -144,7 +144,7 @@ const ContactSection: React.FC = () => {
   const blob = focusedField ? focusBlob[focusedField as keyof typeof focusBlob] : null;
 
   return (
-    <div className="section-inner" style={{ width: '100%', padding: '5rem 1.5rem 3rem', position: 'relative' }}>
+    <div className="section-inner" style={{ width: '100%', padding: 'calc(72px + clamp(1rem, 2vw, 2rem)) 1.5rem clamp(1.5rem, 3vw, 3rem)', position: 'relative' }}>
       {/* Focus-reactive organic bloom */}
       <div
         className={`${styles.blob}${blob ? ` ${styles.blobActive}` : ''}`}
@@ -161,7 +161,7 @@ const ContactSection: React.FC = () => {
 
       {/* Section Header */}
       <AnimateOnScroll>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(1.5rem, 4vw, 3rem)' }}>
           <div className="section-heading-group">
             <h2
               className="gradient-text"
@@ -218,7 +218,7 @@ const ContactSection: React.FC = () => {
                 <input type="text" id="contact-website" name="website" tabIndex={-1} autoComplete="off" value={formData.website ?? ''} onChange={handleInputChange} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '1.25rem' }}>
                 {/* Name field */}
                 <div>
                   <label htmlFor="contact-name" className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>

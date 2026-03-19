@@ -19,7 +19,7 @@ const ProjectNavigation: React.FC<ProjectNavigationProps> = ({ prevProject, next
         <AnimateOnScroll y={30} delay={0.1}>
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: prevProject && nextProject ? '1fr 1fr' : '1fr',
+                gridTemplateColumns: prevProject && nextProject ? 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))' : '1fr',
                 gap: '1.5rem',
                 marginBottom: '3rem',
             }}>
