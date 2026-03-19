@@ -25,8 +25,8 @@
 /* ── Blob ────────────────────────────────────────────────────── */
 .blob {
   position: absolute;
-  width: 560px;
-  height: 480px;
+  width: min(560px, 90vw);
+  height: min(480px, 80vw);
   transform: translate(-50%, -50%);
   filter: blur(90px);
   pointer-events: none;

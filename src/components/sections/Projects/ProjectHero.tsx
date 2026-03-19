@@ -36,8 +36,8 @@ const ProjectHero: React.FC<ProjectHeroProps> = ({
     return (
         <div style={{
             position: 'relative',
-            paddingTop: 'clamp(6rem, 12vw, 10rem)',
-            paddingBottom: 'clamp(3rem, 6vw, 5rem)',
+            paddingTop: 'clamp(3rem, 10vw, 10rem)',
+            paddingBottom: 'clamp(1.5rem, 4vw, 5rem)',
             overflow: 'hidden',
         }}>
             {/* Large faded project number */}
@@ -45,7 +45,7 @@ const ProjectHero: React.FC<ProjectHeroProps> = ({
                 position: 'absolute',
                 top: 'clamp(1rem, 4vw, 3rem)',
                 right: 'clamp(-2rem, 2vw, 4rem)',
-                fontSize: 'clamp(12rem, 30vw, 24rem)',
+                fontSize: 'clamp(6rem, 25vw, 24rem)',
                 fontWeight: 900,
                 lineHeight: 1,
                 color: 'var(--color-text)',
@@ -145,7 +145,7 @@ const ProjectHero: React.FC<ProjectHeroProps> = ({
                     animate={m ? {} : { opacity: 1, y: 0 }}
                     transition={m ? {} : { duration: 0.7, delay: 0.2, ease }}
                     className="gradient-text"
-                    style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.05, letterSpacing: '-0.03em' }}
+                    style={{ fontSize: 'clamp(1.8rem, 5vw, 4.5rem)', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.05, letterSpacing: '-0.03em' }}
                 >
                     {project.title}
                 </motion.h1>

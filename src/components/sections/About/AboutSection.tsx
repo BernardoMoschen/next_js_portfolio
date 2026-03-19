@@ -29,7 +29,7 @@ const AboutSection: React.FC = () => {
             <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', position: 'relative', zIndex: 1 }}>
                 {/* Header */}
                 <AnimateOnScroll>
-                    <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 5vw, 4rem)' }}>
                         <div className="section-heading-group">
                             <h2
                                 style={{

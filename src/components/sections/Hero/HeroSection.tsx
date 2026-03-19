@@ -76,7 +76,7 @@ const HeroSection: React.FC = () => {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        padding: '5rem 1.5rem 6rem',
+        padding: 'calc(64px + clamp(1rem, 2vw, 3rem)) 1.5rem clamp(4rem, 6vw, 6rem)',
       }}
     >
       {/* Bottom gradient fade to smooth globe-to-background transition */}
@@ -130,7 +130,7 @@ const HeroSection: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '2rem',
+          gap: 'clamp(1rem, 2.5vw, 2rem)',
           maxWidth: '64rem',
           width: '100%',
           textAlign: 'center',

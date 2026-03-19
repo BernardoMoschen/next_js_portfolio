@@ -68,7 +68,7 @@ const ProjectDetailContent: React.FC<ProjectDetailProps> = ({
                 <AnimateOnScroll y={30} delay={0.1}>
                     <div className="glass" style={{
                         position: 'relative', borderRadius: 16, overflow: 'hidden',
-                        minHeight: 'clamp(200px, 30vw, 360px)', marginBottom: '3rem',
+                        minHeight: 'clamp(200px, 30vw, 360px)', marginBottom: 'clamp(1.5rem, 4vw, 3rem)',
                         border: '1px solid var(--color-border)',
                     }}>
                         {project.image && project.image !== '/project-placeholder.jpg' ? (
@@ -119,7 +119,7 @@ const ProjectDetailContent: React.FC<ProjectDetailProps> = ({
                     <AnimateOnScroll y={30} delay={0.1}>
                         <div className="glass" style={{
                             padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: 16,
-                            marginBottom: '3rem', border: '1px solid var(--color-border)',
+                            marginBottom: 'clamp(1.5rem, 4vw, 3rem)', border: '1px solid var(--color-border)',
                             position: 'relative', overflow: 'hidden',
                         }}>
                             <div style={{
@@ -149,7 +149,7 @@ const ProjectDetailContent: React.FC<ProjectDetailProps> = ({
                 <AnimateOnScroll y={30} delay={0.15}>
                     <div className="glass" style={{
                         padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: 16,
-                        marginBottom: '3rem', border: '1px solid var(--color-border)',
+                        marginBottom: 'clamp(1.5rem, 4vw, 3rem)', border: '1px solid var(--color-border)',
                         position: 'relative', overflow: 'hidden',
                     }}>
                         <div style={{

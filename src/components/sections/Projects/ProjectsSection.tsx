@@ -398,7 +398,7 @@ const ProjectsSection: React.FC = () => {
                                         position: 'absolute',
                                         top: -10,
                                         right: 16,
-                                        fontSize: '10rem',
+                                        fontSize: 'clamp(5rem, 20vw, 10rem)',
                                         fontWeight: 900,
                                         lineHeight: 1,
                                         color: 'var(--color-text)',
@@ -469,7 +469,7 @@ const ProjectsSection: React.FC = () => {
 
                                     {/* Title */}
                                     <h3 style={{
-                                        fontSize: '1.6rem',
+                                        fontSize: 'clamp(1.2rem, 4vw, 1.6rem)',
                                         fontWeight: 700,
                                         color: 'var(--color-text)',
                                         margin: '0 0 16px 0',

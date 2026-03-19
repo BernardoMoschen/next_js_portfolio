@@ -41,7 +41,7 @@ const CertificationsSection: React.FC = () => {
 
         {/* Header */}
         <AnimateOnScroll>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(1.5rem, 4vw, 3rem)' }}>
             <div className="section-heading-group">
               <h2
                 style={{
