@@ -263,6 +263,19 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                     .timeline-via a:hover {
                         opacity: 0.8;
                     }
+                    .timeline-card--allocated {
+                        border-left: 3px solid var(--color-primary);
+                    }
+                    @media (min-width: 768px) {
+                        .timeline-entry:nth-child(odd) .timeline-card--allocated {
+                            border-left: 3px solid var(--color-primary);
+                            border-right: none;
+                        }
+                        .timeline-entry:nth-child(even) .timeline-card--allocated {
+                            border-right: 3px solid var(--color-primary);
+                            border-left: 1px solid var(--color-border);
+                        }
+                    }
                 `}</style>
 
                 {experiences.map((exp, index) => (
@@ -270,7 +283,7 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                         <div className="timeline-dot">
                             {getCategoryIcon(exp.iconType)}
                         </div>
-                        <div className="timeline-card">
+                        <div className={`timeline-card${exp.allocatedVia ? ' timeline-card--allocated' : ''}`}>
                             <p className="timeline-role">{exp.role}</p>
                             <p className="timeline-company">
                                 <a href={exp.companyUrl} target="_blank" rel="noopener noreferrer">
