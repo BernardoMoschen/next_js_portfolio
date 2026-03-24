@@ -21,6 +21,10 @@ export interface Experience {
     description?: string[];
     projectSlugs?: string[];
     iconType: 'work';
+    allocatedVia?: {
+        company: string;
+        companyUrl: string;
+    };
 }
 
 export const technicalAreas: TechnicalArea[] = [
@@ -88,6 +92,11 @@ export const technicalAreas: TechnicalArea[] = [
     },
 ];
 
+const metaItConsultant = {
+    company: 'Meta IT',
+    companyUrl: 'https://www.linkedin.com/company/metaoficial/about/',
+};
+
 export const experiences: Experience[] = [
     {
         role: 'Senior Full Stack Engineer',
@@ -96,6 +105,7 @@ export const experiences: Experience[] = [
         period: '2024 - Present',
         projectSlugs: ['telecom-backoffice'],
         iconType: 'work',
+        allocatedVia: metaItConsultant,
     },
     {
         role: 'Mid-level Full Stack Engineer',
@@ -104,6 +114,7 @@ export const experiences: Experience[] = [
         period: '2022 - 2023',
         projectSlugs: ['edtech-platform'],
         iconType: 'work',
+        allocatedVia: metaItConsultant,
     },
     {
         role: 'Mid-level Full Stack Engineer',
@@ -112,12 +123,13 @@ export const experiences: Experience[] = [
         period: '2021 - 2022',
         projectSlugs: ['mining-data-platform'],
         iconType: 'work',
+        allocatedVia: metaItConsultant,
     },
     {
         role: 'Full Stack Engineer',
         company: 'Meta IT',
         companyUrl: 'https://www.linkedin.com/company/metaoficial/about/',
-        period: '2021 - 2021',
+        period: '2021 - Present',
         iconType: 'work',
     },
 ];

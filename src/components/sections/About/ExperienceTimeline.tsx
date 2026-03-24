@@ -248,6 +248,21 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                     .timeline-project-link:hover {
                         opacity: 1;
                     }
+                    .timeline-via {
+                        display: block;
+                        font-size: 0.8rem;
+                        color: var(--color-text-secondary);
+                        font-style: italic;
+                        margin-bottom: 0.25rem;
+                    }
+                    .timeline-via a {
+                        color: var(--color-text-secondary);
+                        text-decoration: none;
+                        transition: opacity 0.2s;
+                    }
+                    .timeline-via a:hover {
+                        opacity: 0.8;
+                    }
                 `}</style>
 
                 {experiences.map((exp, index) => (
@@ -262,6 +277,14 @@ const ExperienceTimeline: React.FC<ExperienceTimelineProps> = ({ experiences, de
                                     {exp.company}
                                 </a>
                             </p>
+                            {exp.allocatedVia && (
+                                <span className="timeline-via">
+                                    via{' '}
+                                    <a href={exp.allocatedVia.companyUrl} target="_blank" rel="noopener noreferrer">
+                                        {exp.allocatedVia.company}
+                                    </a>
+                                </span>
+                            )}
                             <span className="timeline-period">{periods[index] ?? exp.period}</span>
                             <ul className="timeline-desc-list">
                                 {(descriptions[index] ?? exp.description).map((desc, descIndex) => (

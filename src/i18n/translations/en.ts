@@ -139,7 +139,7 @@ export const en = {
     live_demo: 'Live Demo',
     overview: 'Project Overview',
   },
-  experience_periods: ['2024 - Present', '2022 - 2023', '2021 - 2022', '2021 - 2021'],
+  experience_periods: ['2024 - Present', '2022 - 2023', '2021 - 2022', '2021 - Present'],
   project_items: {
     portfolio: {
       title: 'Portfolio Website',

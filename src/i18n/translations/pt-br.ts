@@ -139,7 +139,7 @@ export const ptBr = {
     live_demo: 'Demo ao Vivo',
     overview: 'Visão Geral do Projeto',
   },
-  experience_periods: ['2024 - Atual', '2022 - 2023', '2021 - 2022', '2021 - 2021'],
+  experience_periods: ['2024 - Atual', '2022 - 2023', '2021 - 2022', '2021 - Atual'],
   project_items: {
     portfolio: {
       title: 'Portfólio',
