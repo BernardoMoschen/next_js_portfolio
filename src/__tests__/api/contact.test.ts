@@ -28,6 +28,8 @@ const validBody = {
     message: 'This is a test message.',
 };
 
+const originalResendApiKey = process.env.RESEND_API_KEY;
+
 function makeRequest(body: object, ip = '1.2.3.4') {
     return new NextRequest('http://localhost/api/contact', {
         method: 'POST',
@@ -38,6 +40,16 @@ function makeRequest(body: object, ip = '1.2.3.4') {
 
 beforeEach(() => {
     jest.resetModules();
+    process.env.RESEND_API_KEY = 'test-resend-api-key';
+});
+
+afterAll(() => {
+    if (originalResendApiKey === undefined) {
+        delete process.env.RESEND_API_KEY;
+        return;
+    }
+
+    process.env.RESEND_API_KEY = originalResendApiKey;
 });
 
 describe('POST /api/contact', () => {
@@ -84,5 +96,26 @@ describe('POST /api/contact', () => {
         await POST(makeRequest(validBody, ip));
         const res = await POST(makeRequest(validBody, ip));
         expect(res.status).toBe(429);
+    });
+
+    test('returns 503 when email service is not configured', async () => {
+        delete process.env.RESEND_API_KEY;
+        const res = await POST(makeRequest(validBody, '10.0.0.6'));
+        expect(res.status).toBe(503);
+        const json = await res.json();
+        expect(json.error).toMatch(/configured/i);
+    });
+
+    test('returns 400 for malformed JSON payload', async () => {
+        const malformedRequest = new NextRequest('http://localhost/api/contact', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-forwarded-for': '10.0.0.7' },
+            body: '{"name":"test",',
+        });
+
+        const res = await POST(malformedRequest);
+        expect(res.status).toBe(400);
+        const json = await res.json();
+        expect(json.error).toMatch(/invalid json/i);
     });
 });

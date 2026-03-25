@@ -25,10 +25,15 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function getClientIp(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (!forwardedFor) return 'unknown';
+  return forwardedFor.split(',')[0]?.trim() || 'unknown';
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
+    const ip = getClientIp(request);
     if (isRateLimited(ip)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again in a minute.' },
@@ -36,29 +41,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { name, email, subject, message, website } = body;
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
 
-    if (website) {
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const { name, email, subject, message, website } = body as {
+      name?: unknown;
+      email?: unknown;
+      subject?: unknown;
+      message?: unknown;
+      website?: unknown;
+    };
+
+    if (typeof website === 'string' && website.trim().length > 0) {
       return NextResponse.json({ success: true, message: 'Email sent successfully' });
     }
 
-    if (!name || !email || !subject || !message) {
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof subject !== 'string' ||
+      typeof message !== 'string'
+    ) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
-    if (name.length > FIELD_MAX_LENGTHS.name || email.length > FIELD_MAX_LENGTHS.email || subject.length > FIELD_MAX_LENGTHS.subject || message.length > FIELD_MAX_LENGTHS.message) {
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim();
+    const normalizedSubject = subject.trim();
+    const normalizedMessage = message.trim();
+
+    if (!normalizedName || !normalizedEmail || !normalizedSubject || !normalizedMessage) {
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+    }
+
+    if (
+      normalizedName.length > FIELD_MAX_LENGTHS.name ||
+      normalizedEmail.length > FIELD_MAX_LENGTHS.email ||
+      normalizedSubject.length > FIELD_MAX_LENGTHS.subject ||
+      normalizedMessage.length > FIELD_MAX_LENGTHS.message
+    ) {
       return NextResponse.json({ error: 'Field length exceeds limit' }, { status: 400 });
     }
 
-    if (!EMAIL_REGEX.test(email)) {
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    const safeName = escapeHtml(name.trim());
-    const safeEmail = escapeHtml(email.trim());
-    const safeSubject = escapeHtml(subject.trim());
-    const safeMessage = escapeHtml(message.trim());
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.error('Contact form misconfiguration: missing RESEND_API_KEY');
+      return NextResponse.json({ error: 'Email service is not configured' }, { status: 503 });
+    }
+
+    const resend = new Resend(resendApiKey);
+
+    const safeName = escapeHtml(normalizedName);
+    const safeEmail = escapeHtml(normalizedEmail);
+    const safeSubject = escapeHtml(normalizedSubject);
+    const safeMessage = escapeHtml(normalizedMessage);
 
     const emailResponse = await resend.emails.send({
       from: `Portfolio Contact <contact@${siteConfig.domain}>`,
@@ -82,7 +130,7 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
       `,
-      replyTo: email.trim(),
+      replyTo: normalizedEmail,
     });
 
     if (emailResponse.error) {

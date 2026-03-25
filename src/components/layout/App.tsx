@@ -96,23 +96,23 @@ const AppInner: React.FC = () => {
             <Navigation />
             <ScrollProgress />
             <main id="main-content">
-                <CinematicSection id="hero" scrollHeight="300vh" startVisible>
+                <CinematicSection id="hero" scrollHeight="300vh" mobileScrollHeight="200vh" startVisible>
                     <HeroSection />
                 </CinematicSection>
                 <SectionDivider idBase="hero-about-divider" />
-                <CinematicSection id="about" scrollHeight="400vh">
+                <CinematicSection id="about" scrollHeight="400vh" mobileScrollHeight="250vh">
                     <AboutSection />
                 </CinematicSection>
                 <SectionDivider flip idBase="about-projects-divider" />
-                <CinematicSection id="projects" scrollHeight="500vh">
+                <CinematicSection id="projects" scrollHeight="500vh" mobileScrollHeight="300vh">
                     <ProjectsSection />
                 </CinematicSection>
                 <SectionDivider flip idBase="projects-certifications-divider" />
-                <CinematicSection id="certifications" scrollHeight="300vh">
+                <CinematicSection id="certifications" scrollHeight="300vh" mobileScrollHeight="200vh">
                     <CertificationsSection />
                 </CinematicSection>
                 <SectionDivider idBase="certifications-contact-divider" />
-                <CinematicSection id="contact" scrollHeight="400vh">
+                <CinematicSection id="contact" scrollHeight="400vh" mobileScrollHeight="250vh">
                     <ContactSection />
                 </CinematicSection>
             </main>

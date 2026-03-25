@@ -5,6 +5,8 @@ interface CinematicSectionProps {
     id: SectionId;
     children: React.ReactNode;
     scrollHeight?: string;
+    /** Scroll height for touch/mobile devices. Falls back to scrollHeight if not set. */
+    mobileScrollHeight?: string;
     /** z-index for the sticky content layer. Default 2 (above 3D scene).
      *  Set to 0 to let 3D particles render above this section's content. */
     contentZIndex?: number;
@@ -21,6 +23,7 @@ const CinematicSection: React.FC<CinematicSectionProps> = ({
     id,
     children,
     scrollHeight = '400vh',
+    mobileScrollHeight,
     contentZIndex = 2,
     startVisible = false,
 }) => {
@@ -29,9 +32,11 @@ const CinematicSection: React.FC<CinematicSectionProps> = ({
     const innerRef = useRef<HTMLDivElement>(null);
     const rafRef = useRef(0);
     const [reducedMotion, setReducedMotion] = useState(false);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
 
     useEffect(() => {
         setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
     }, []);
 
     const stickyRef = useRef<HTMLDivElement>(null);
@@ -130,7 +135,7 @@ const CinematicSection: React.FC<CinematicSectionProps> = ({
             id={id}
             style={{
                 position: 'relative',
-                height: scrollHeight,
+                height: (isTouchDevice && mobileScrollHeight) ? mobileScrollHeight : scrollHeight,
             }}
         >
             <div
